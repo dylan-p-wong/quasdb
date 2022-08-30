@@ -1,0 +1,5 @@
+add_library(parser lexer.h lexer.cc)
+
+set(ALL_OBJECT_FILES
+    ${ALL_OBJECT_FILES} $<TARGET_OBJECTS:parser>
+    PARENT_SCOPE)
