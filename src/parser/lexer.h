@@ -114,7 +114,6 @@ class Lexer {
 public:
     Lexer(std::string input);
     ~Lexer();
-    std::optional<Result<Token>> Next();
     void ConsumeWhitespace();
     std::optional<char> NextIf(bool (*predicate)(char));
     std::optional<Token> NextIfToken(Token (*tokenizer)(char));
@@ -125,4 +124,13 @@ public:
     Result<Token> ScanNumber();
     Result<Token> ScanString();
     Result<Token> ScanSymbol();
+};
+
+class LexerIterator {
+    std::optional<Result<Token>> peeked;
+    Lexer l;
+public:
+    LexerIterator(std::string input);
+    std::optional<Result<Token>> Peek();
+    std::optional<Result<Token>> Next();
 };

@@ -152,7 +152,7 @@ Result<Token> Lexer::ScanIdentifierQuoted() {
     std::string identifier = "";
 
     while (iter != input.end()) {
-        char c = NextIf([](char c) { return true; }).value();
+        char c = NextIf([](char) { return true; }).value();
         if (c == '"') {
             break;
         }
@@ -175,7 +175,7 @@ Result<Token> Lexer::ScanString() {
     std::string s = "";
 
     while (iter != input.end()) {
-        char c = NextIf([](char c) { return true; }).value();
+        char c = NextIf([](char) { return true; }).value();
         if (c == '\'') {
             break;
         }
@@ -225,4 +225,18 @@ Result<Token> Lexer::ScanSymbol() {
     default:
         return Result{Token{TokenType::Invalid, std::string{c}}}; // Error?
     }
+}
+
+LexerIterator::LexerIterator(std::string input) : l{Lexer{input}} {
+    peeked = l.Scan();
+}
+
+std::optional<Result<Token>> LexerIterator::Peek() {
+    return peeked;
+}
+
+std::optional<Result<Token>> LexerIterator::Next() {
+    std::optional<Result<Token>> temp = peeked;
+    peeked = l.Scan();
+    return temp;
 }

@@ -114,3 +114,27 @@ TEST(LexerTest, LexerScanNumber) {
   EXPECT_EQ(t.value().value.type, TokenType::IdentifierValue);
   EXPECT_EQ(t.value().value.value, "fasdf");
 }
+
+TEST(LexerTest, LexerIterator) {
+  LexerIterator l{". ! SELECT INSERT WHAT 'testing' 1299 / string"};
+  EXPECT_EQ(l.Peek().value().value.type, TokenType::Period);
+  EXPECT_EQ(l.Next().value().value.type, TokenType::Period);
+  EXPECT_EQ(l.Peek().value().value.type, TokenType::Exclamation);
+  EXPECT_EQ(l.Next().value().value.type, TokenType::Exclamation);
+  EXPECT_EQ(l.Peek().value().value.type, TokenType::Select);
+  EXPECT_EQ(l.Next().value().value.type, TokenType::Select);
+  EXPECT_EQ(l.Peek().value().value.type, TokenType::Insert);
+  EXPECT_EQ(l.Next().value().value.type, TokenType::Insert);
+  EXPECT_EQ(l.Peek().value().value.type, TokenType::IdentifierValue);
+  EXPECT_EQ(l.Next().value().value.type, TokenType::IdentifierValue);
+  EXPECT_EQ(l.Peek().value().value.type, TokenType::StringValue);
+  EXPECT_EQ(l.Next().value().value.type, TokenType::StringValue);
+  EXPECT_EQ(l.Peek().value().value.type, TokenType::NumberValue);
+  EXPECT_EQ(l.Next().value().value.type, TokenType::NumberValue);
+  EXPECT_EQ(l.Peek().value().value.type, TokenType::Slash);
+  EXPECT_EQ(l.Next().value().value.type, TokenType::Slash);
+  EXPECT_EQ(l.Peek().value().value.type, TokenType::String);
+  EXPECT_EQ(l.Next().value().value.type, TokenType::String);
+  EXPECT_EQ(l.Peek().has_value(), false);
+  EXPECT_EQ(l.Next().has_value(), false);
+}
