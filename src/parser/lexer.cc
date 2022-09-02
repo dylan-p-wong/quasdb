@@ -152,7 +152,7 @@ Result<Token> Lexer::ScanIdentifierQuoted() {
     std::string identifier = "";
 
     while (iter != input.end()) {
-        char c = NextIf([](char c) { return isalnum(c) != 0; }).value();
+        char c = NextIf([](char c) { return true; }).value();
         if (c == '"') {
             break;
         }
@@ -175,7 +175,7 @@ Result<Token> Lexer::ScanString() {
     std::string s = "";
 
     while (iter != input.end()) {
-        char c = NextIf([](char c) { return isalnum(c) != 0; }).value();
+        char c = NextIf([](char c) { return true; }).value();
         if (c == '\'') {
             break;
         }
