@@ -29,6 +29,73 @@ Result<Token, Error> Parser::NextExpect(TokenType expect) {
     return Err(lexer.get()->Peek().unwrapErr());
 }
 
+Result<Column, Error> Parser::ParseColumn() {
+    Column c{}; 
+
+    Result<Token, Error> nameToken = NextExpect(TokenType::IdentifierValue);
+
+    if (nameToken.isErr()) {
+        return Err(nameToken.unwrapErr());
+    }
+
+    c.name = nameToken.unwrap().value;
+
+    std::optional<Token> typeToken = NextIf([](Token t) { return t.type == TokenType::Integer || t.type == TokenType::Float || t.type == TokenType::Varchar || t.type == TokenType::Boolean; });
+
+    if (!typeToken.has_value()) {
+        return Err(Error{ErrorType::Parse, "Expected token but found another."});
+    }
+
+    if (typeToken.value().type == TokenType::Integer) {
+        c.data_type = DataType::Integer;
+    } else if (typeToken.value().type == TokenType::Float) {
+        c.data_type = DataType::Float;
+    } else if (typeToken.value().type == TokenType::Boolean) {
+        c.data_type = DataType::Boolean;
+    } else if (typeToken.value().type == TokenType::Varchar) {
+        c.data_type = DataType::Varchar;
+    } else {
+        return Err(Error{ErrorType::Parse, "Expected token but found another."});
+    }
+
+    auto column_keyword = [](Token t) { return t.type ==  TokenType::Primary || t.type == TokenType::Null || t.type == TokenType::Not || t.type == TokenType::Default || t.type == TokenType::Unique || t.type == TokenType::Index || t.type == TokenType::References; };
+
+    std::optional<Token> t = NextIf(column_keyword);
+
+    while (t.has_value()) {
+        if (t.value().type == TokenType::Primary) {
+            if (NextExpect(TokenType::Key).isErr()) {
+                return Err(Error{ErrorType::Parse, "Expected token KEY but found another."});
+            }
+            c.primary_key = true;
+        } else if (t.value().type == TokenType::Null) {
+
+        } else if (t.value().type == TokenType::Not) {
+            
+        } else if (t.value().type == TokenType::Default) {
+            
+        } else if (t.value().type == TokenType::Unique) {
+            c.unique = true;
+        } else if (t.value().type == TokenType::Index) {
+            c.index = true;
+        } else if (t.value().type == TokenType::References) {
+            // Result<Token, Error> nameToken = NextExpect(TokenType::IdentifierValue);
+
+            // if (nameToken.isErr()) {
+            //     return Err(nameToken.unwrapErr());
+            // }
+
+            // c.references = nameToken.unwrap().value;
+        } else {
+            return Err(Error{ErrorType::Parse, "Expected token but found another."});
+        }
+
+        t = NextIf(column_keyword);
+    }
+
+    return Ok(c);
+}
+
 Result<Statement*, Error> Parser::ParseStatement() {
     if (lexer.get()->Peek().isErr()) {
         return Err(lexer.get()->Peek().unwrapErr());
@@ -77,6 +144,19 @@ Result<Statement*, Error> Parser::ParseCreateTable() {
     }
 
     std::vector<Column> columns;
+
+    while (true) {
+        Result<Column, Error> c = ParseColumn();
+        if (c.isErr()) {
+            return Err(c.unwrapErr());
+        }
+
+        columns.push_back(c.unwrap());
+
+        if (NextExpect(TokenType::Comma).isErr()) {
+            break;
+        }
+    }
 
     Result<Token, Error> closeParenToken = NextExpect(TokenType::CloseParen);
     if (closeParenToken.isErr()) {

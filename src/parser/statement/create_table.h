@@ -6,7 +6,7 @@
 #include "expression.h"
 #include "statement.h"
 
-enum class DataType { Boolean, Integer, Float, String };
+enum class DataType { Boolean, Integer, Float, Varchar };
 
 struct Column {
     std::string name;

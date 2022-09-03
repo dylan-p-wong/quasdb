@@ -5,6 +5,7 @@
 
 #include "../common/result.h"
 #include "../common/error.h"
+#include "./statement/create_table.h"
 
 #include "lexer.h"
 
@@ -16,6 +17,7 @@ public:
     Parser(std::string input);
     std::optional<Token> NextIf(bool (*predicate)(Token));
     Result<Token, Error> NextExpect(TokenType expect);
+    Result<Column, Error> ParseColumn();
     Result<Statement*, Error> ParseStatement();
     Result<Statement*, Error> ParseCreateTable();
     Result<Statement*, Error> ParseDropTable();
