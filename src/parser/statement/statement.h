@@ -15,8 +15,8 @@ enum class StatementType
 };
 
 class Statement {
+public:
     StatementType type;
+    Statement(StatementType type);
     virtual ~Statement() = 0;
 };
-
-Statement::~Statement() {}

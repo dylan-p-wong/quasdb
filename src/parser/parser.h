@@ -14,6 +14,8 @@ class Parser {
     std::unique_ptr<LexerIterator> lexer;
 public:
     Parser(std::string input);
+    std::optional<Token> NextIf(bool (*predicate)(Token));
+    Result<Token, Error> NextExpect(TokenType expect);
     Result<Statement*, Error> ParseStatement();
     Result<Statement*, Error> ParseCreateTable();
     Result<Statement*, Error> ParseDropTable();
