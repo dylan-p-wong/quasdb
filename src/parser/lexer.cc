@@ -1,6 +1,4 @@
 #include "lexer.h"
-#include "../common/result.h"
-#include "../common/error.h"
 
 Token::Token(TokenType type, std::string value) : type{type}, value{value} {}
 

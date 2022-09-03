@@ -9,5 +9,5 @@ struct Error {
     ErrorType type;
     std::string message;
 
-    Error(ErrorType type, std::string text) : type{type}, message{message} {}
+    Error(ErrorType type, std::string message) : type{type}, message{message} {}
 };
