@@ -6,6 +6,7 @@
 #include <unordered_map>
 
 #include "../common/result.h"
+#include "../common/error.h"
 
 enum TokenType {
     NumberValue,
@@ -118,19 +119,19 @@ public:
     std::optional<char> NextIf(bool (*predicate)(char));
     std::optional<Token> NextIfToken(Token (*tokenizer)(char));
     std::optional<std::string> NextWhile(bool (*predicate)(char));
-    std::optional<Result<Token>> Scan();
-    Result<Token> ScanIdentifier();
-    Result<Token> ScanIdentifierQuoted();
-    Result<Token> ScanNumber();
-    Result<Token> ScanString();
-    Result<Token> ScanSymbol();
+    std::optional<Result<Token, Error>> Scan();
+    Result<Token, Error> ScanIdentifier();
+    Result<Token, Error> ScanIdentifierQuoted();
+    Result<Token, Error> ScanNumber();
+    Result<Token, Error> ScanString();
+    Result<Token, Error> ScanSymbol();
 };
 
 class LexerIterator {
-    std::optional<Result<Token>> peeked;
+    std::optional<Token> peeked;
     Lexer l;
 public:
     LexerIterator(std::string input);
-    std::optional<Result<Token>> Peek();
-    std::optional<Result<Token>> Next();
+    Result<Token, Error> Peek();
+    Result<Token, Error> Next();
 };

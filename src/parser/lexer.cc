@@ -1,5 +1,6 @@
 #include "lexer.h"
 #include "../common/result.h"
+#include "../common/error.h"
 
 Token::Token(TokenType type, std::string value) : type{type}, value{value} {}
 
@@ -112,7 +113,7 @@ std::optional<std::string> Lexer::NextWhile(bool (*predicate)(char)) {
     }
 }
 
-std::optional<Result<Token>> Lexer::Scan() {
+std::optional<Result<Token, Error>> Lexer::Scan() {
     ConsumeWhitespace();
 
     if (iter == input.end()) {
@@ -132,7 +133,7 @@ std::optional<Result<Token>> Lexer::Scan() {
     }
 }
 
-Result<Token> Lexer::ScanIdentifier() {
+Result<Token, Error> Lexer::ScanIdentifier() {
     std::optional<char> c = NextIf([](char c) { return isalpha(c) != 0; });
     std::string name = "";
     
@@ -142,12 +143,12 @@ Result<Token> Lexer::ScanIdentifier() {
     
     name += NextWhile([](char c) { return isalnum(c) != 0; }).value_or("");
     
-    return Result{Token{ValueToTokenType(name), name}};
+    return Ok(Token{ValueToTokenType(name), name});
 }
 
-Result<Token> Lexer::ScanIdentifierQuoted() {
+Result<Token, Error> Lexer::ScanIdentifierQuoted() {
     if (!NextIf([](char c) { return c == '"'; }).has_value()) {
-        return Result{Token{TokenType::Invalid, ""}};
+        return Err(Error{ErrorType::Lex, "Invalid quoted identifier."});
     }
     std::string identifier = "";
 
@@ -159,84 +160,98 @@ Result<Token> Lexer::ScanIdentifierQuoted() {
         identifier += c;
     }
 
-    return Result{Token{TokenType::IdentifierValue, identifier}};
+    return Ok(Token{TokenType::IdentifierValue, identifier});
 }
 
-Result<Token> Lexer::ScanNumber() {
+Result<Token, Error> Lexer::ScanNumber() {
     std::string num = NextWhile([](char c) { return isdigit(c) != 0; }).value();
 
-    return Result{Token{TokenType::NumberValue, num}};
+    return Ok(Token{TokenType::NumberValue, num});
 }
 
-Result<Token> Lexer::ScanString() {
+Result<Token, Error> Lexer::ScanString() {
     if (!NextIf([](char c) { return c == '\''; }).has_value()) {
-        return Result{Token{TokenType::Invalid, ""}};
+        return Err(Error{ErrorType::Lex, "Invalid string."});
     }
     std::string s = "";
 
     while (iter != input.end()) {
         char c = NextIf([](char) { return true; }).value();
         if (c == '\'') {
-            break;
+            return Ok(Token{TokenType::StringValue, s});
         }
         s += c;
     }
 
-    return Result{Token{TokenType::StringValue, s}};
+    return Ok(Token{TokenType::StringValue, s});
 }
 
-Result<Token> Lexer::ScanSymbol() {
+Result<Token, Error> Lexer::ScanSymbol() {
     char c = NextIf([](char) { return true; }).value();
 
-    switch (c)
-    {
-    case '.':
-        return Result{Token{TokenType::Period, std::string{c}}};
-    case '=':
-        return Result{Token{TokenType::Equal, std::string{c}}};
-    case '>':
-        return Result{Token{TokenType::GreaterThan, std::string{c}}};
-    case '<':
-        return Result{Token{TokenType::LessThan, std::string{c}}};
-    case '+':
-        return Result{Token{TokenType::Plus, std::string{c}}};
-    case '-':
-        return Result{Token{TokenType::Minus, std::string{c}}};
-    case '*':
-        return Result{Token{TokenType::Asterisk, std::string{c}}};
-    case '/':
-        return Result{Token{TokenType::Slash, std::string{c}}};
-    case '^':
-        return Result{Token{TokenType::Caret, std::string{c}}};
-    case '%':
-        return Result{Token{TokenType::Percent, std::string{c}}};
-    case '!':
-        return Result{Token{TokenType::Exclamation, std::string{c}}};
-    case '?':
-        return Result{Token{TokenType::Question, std::string{c}}};
-    case '(':
-        return Result{Token{TokenType::OpenParen, std::string{c}}};
-    case ')':
-        return Result{Token{TokenType::CloseParen, std::string{c}}};
-    case ',':
-        return Result{Token{TokenType::Comma, std::string{c}}};
-    case ';':
-        return Result{Token{TokenType::Semicolon, std::string{c}}};
-    default:
-        return Result{Token{TokenType::Invalid, std::string{c}}}; // Error?
+    switch (c) {
+        case '.':
+            return Ok(Token{TokenType::Period, std::string{c}});
+        case '=':
+            return Ok(Token{TokenType::Equal, std::string{c}});
+        case '>':
+            return Ok(Token{TokenType::GreaterThan, std::string{c}});
+        case '<':
+            return Ok(Token{TokenType::LessThan, std::string{c}});
+        case '+':
+            return Ok(Token{TokenType::Plus, std::string{c}});
+        case '-':
+            return Ok(Token{TokenType::Minus, std::string{c}});
+        case '*':
+            return Ok(Token{TokenType::Asterisk, std::string{c}});
+        case '/':
+            return Ok(Token{TokenType::Slash, std::string{c}});
+        case '^':
+            return Ok(Token{TokenType::Caret, std::string{c}});
+        case '%':
+            return Ok(Token{TokenType::Percent, std::string{c}});
+        case '!':
+            return Ok(Token{TokenType::Exclamation, std::string{c}});
+        case '?':
+            return Ok(Token{TokenType::Question, std::string{c}});
+        case '(':
+            return Ok(Token{TokenType::OpenParen, std::string{c}});
+        case ')':
+            return Ok(Token{TokenType::CloseParen, std::string{c}});
+        case ',':
+            return Ok(Token{TokenType::Comma, std::string{c}});
+        case ';':
+            return Ok(Token{TokenType::Semicolon, std::string{c}});
+        default:
+            return Err(Error{ErrorType::Lex, "Invalid symbol."});
     }
 }
 
 LexerIterator::LexerIterator(std::string input) : l{Lexer{input}} {
-    peeked = l.Scan();
+    peeked = l.Scan().value().unwrap();
 }
 
-std::optional<Result<Token>> LexerIterator::Peek() {
-    return peeked;
+Result<Token, Error> LexerIterator::Peek() {
+    if (peeked.has_value()) {
+        return Ok(peeked.value());
+    }
+    return Err(Error{ErrorType::Lex, "Unexpected end of input."});
 }
 
-std::optional<Result<Token>> LexerIterator::Next() {
-    std::optional<Result<Token>> temp = peeked;
-    peeked = l.Scan();
-    return temp;
+Result<Token, Error> LexerIterator::Next() {
+    std::optional<Token> temp = peeked;
+
+    if (!peeked.has_value()) {
+        return Err(Error{ErrorType::Lex, "Unexpected end of input."});
+    }
+
+    std::optional<Result<Token, Error>> p = l.Scan();
+
+    if (p.has_value() && p.value().isOk()) {
+        peeked = p.value().unwrap();
+    } else {
+        peeked = std::nullopt;
+    }
+
+    return Ok(temp.value());
 }

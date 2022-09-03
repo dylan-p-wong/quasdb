@@ -5,136 +5,136 @@
 
 TEST(LexerTest, LexerSelect) {
   Lexer l{"SELECT * FROM movies"};
-  std::optional<Result<Token>> t = l.Scan();
-  EXPECT_EQ(t.value().value.type, TokenType::Select);
-  t = l.Scan();
-  EXPECT_EQ(t.value().value.type, TokenType::Asterisk);
-  t = l.Scan();
-  EXPECT_EQ(t.value().value.type, TokenType::From);
-  t = l.Scan();
-  EXPECT_EQ(t.value().value.type, TokenType::IdentifierValue);
-  EXPECT_EQ(t.value().value.value, "movies");
-  t = l.Scan();
-  EXPECT_EQ(t.has_value(), false);
+  Token t = l.Scan().value().unwrap();
+  EXPECT_EQ(t.type, TokenType::Select);
+  t = l.Scan().value().unwrap();
+  EXPECT_EQ(t.type, TokenType::Asterisk);
+  t = l.Scan().value().unwrap();
+  EXPECT_EQ(t.type, TokenType::From);
+  t = l.Scan().value().unwrap();
+  EXPECT_EQ(t.type, TokenType::IdentifierValue);
+  EXPECT_EQ(t.value, "movies");
+
+  EXPECT_EQ(l.Scan().has_value(), false);
 }
 
 TEST(LexerTest, LexerSelect2) {
   Lexer l{"SELECT id,title FROM movies where id=40"};
-  std::optional<Result<Token>> t = l.Scan();
-  EXPECT_EQ(t.value().value.type, TokenType::Select);
-  t = l.Scan();
-  EXPECT_EQ(t.value().value.type, TokenType::IdentifierValue);
-  EXPECT_EQ(t.value().value.value, "id");
-  t = l.Scan();
-  EXPECT_EQ(t.value().value.type, TokenType::Comma);
-  t = l.Scan();
-  EXPECT_EQ(t.value().value.type, TokenType::IdentifierValue);
-  EXPECT_EQ(t.value().value.value, "title");
-  t = l.Scan();
-  EXPECT_EQ(t.value().value.type, TokenType::From);
-  t = l.Scan();
-  EXPECT_EQ(t.value().value.type, TokenType::IdentifierValue);
-  EXPECT_EQ(t.value().value.value, "movies");
-  t = l.Scan();
-  EXPECT_EQ(t.value().value.type, TokenType::Where);
-  t = l.Scan();
-  EXPECT_EQ(t.value().value.type, TokenType::IdentifierValue);
-  EXPECT_EQ(t.value().value.value, "id");
-  t = l.Scan();
-  EXPECT_EQ(t.value().value.type, TokenType::Equal);
-  t = l.Scan();
-  EXPECT_EQ(t.value().value.type, TokenType::NumberValue);
-  EXPECT_EQ(t.value().value.value, "40");
-  t = l.Scan();
-  EXPECT_EQ(t.has_value(), false);
+  Token t = l.Scan().value().unwrap();
+  EXPECT_EQ(t.type, TokenType::Select);
+  t = l.Scan().value().unwrap();
+  EXPECT_EQ(t.type, TokenType::IdentifierValue);
+  EXPECT_EQ(t.value, "id");
+  t = l.Scan().value().unwrap();
+  EXPECT_EQ(t.type, TokenType::Comma);
+  t = l.Scan().value().unwrap();
+  EXPECT_EQ(t.type, TokenType::IdentifierValue);
+  EXPECT_EQ(t.value, "title");
+  t = l.Scan().value().unwrap();
+  EXPECT_EQ(t.type, TokenType::From);
+  t = l.Scan().value().unwrap();
+  EXPECT_EQ(t.type, TokenType::IdentifierValue);
+  EXPECT_EQ(t.value, "movies");
+  t = l.Scan().value().unwrap();
+  EXPECT_EQ(t.type, TokenType::Where);
+  t = l.Scan().value().unwrap();
+  EXPECT_EQ(t.type, TokenType::IdentifierValue);
+  EXPECT_EQ(t.value, "id");
+  t = l.Scan().value().unwrap();
+  EXPECT_EQ(t.type, TokenType::Equal);
+  t = l.Scan().value().unwrap();
+  EXPECT_EQ(t.type, TokenType::NumberValue);
+  EXPECT_EQ(t.value, "40");
+
+  EXPECT_EQ(l.Scan().has_value(), false);
 }
 
 TEST(LexerTest, LexerIdentifierQuoted) {
   Lexer l{"\"movies\""};
-  std::optional<Result<Token>> t = l.Scan();
-  EXPECT_EQ(t.value().value.type, TokenType::IdentifierValue);
-  EXPECT_EQ(t.value().value.value, "movies");
-  t = l.Scan();
-  EXPECT_EQ(t.has_value(), false);
+  Token t = l.Scan().value().unwrap();
+  EXPECT_EQ(t.type, TokenType::IdentifierValue);
+  EXPECT_EQ(t.value, "movies");
+
+  EXPECT_EQ(l.Scan().has_value(), false);
 }
 
 TEST(LexerTest, LexerIdentifierQuoted2) {
   Lexer l{"SELECT FROM \"mov#@$DFA SDfies\""};
-  std::optional<Result<Token>> t = l.Scan();
-  EXPECT_EQ(t.value().value.type, TokenType::Select);
-  EXPECT_EQ(t.value().value.value, "SELECT");
-  t = l.Scan();
-  EXPECT_EQ(t.value().value.type, TokenType::From);
-  EXPECT_EQ(t.value().value.value, "FROM");
-  t = l.Scan();
-  EXPECT_EQ(t.value().value.type, TokenType::IdentifierValue);
-  EXPECT_EQ(t.value().value.value, "mov#@$DFA SDfies");
-  t = l.Scan();
-  EXPECT_EQ(t.has_value(), false);
+  Token t = l.Scan().value().unwrap();
+  EXPECT_EQ(t.type, TokenType::Select);
+  EXPECT_EQ(t.value, "SELECT");
+  t = l.Scan().value().unwrap();
+  EXPECT_EQ(t.type, TokenType::From);
+  EXPECT_EQ(t.value, "FROM");
+  t = l.Scan().value().unwrap();
+  EXPECT_EQ(t.type, TokenType::IdentifierValue);
+  EXPECT_EQ(t.value, "mov#@$DFA SDfies");
+
+  EXPECT_EQ(l.Scan().has_value(), false);
 }
 
 TEST(LexerTest, LexerString) {
   Lexer l{"'movies'"};
-  std::optional<Result<Token>> t = l.Scan();
-  EXPECT_EQ(t.value().value.type, TokenType::StringValue);
-  EXPECT_EQ(t.value().value.value, "movies");
-  t = l.Scan();
-  EXPECT_EQ(t.has_value(), false);
+  Token t = l.Scan().value().unwrap();
+  EXPECT_EQ(t.type, TokenType::StringValue);
+  EXPECT_EQ(t.value, "movies");
+  
+  EXPECT_EQ(l.Scan().has_value(), false);
 }
 
 TEST(LexerTest, LexerString2) {
   Lexer l{"SELECT FROM 'movf asdf #$@# 432432 ies'"};
-  std::optional<Result<Token>> t = l.Scan();
-  EXPECT_EQ(t.value().value.type, TokenType::Select);
-  EXPECT_EQ(t.value().value.value, "SELECT");
-  t = l.Scan();
-  EXPECT_EQ(t.value().value.type, TokenType::From);
-  EXPECT_EQ(t.value().value.value, "FROM");
-  t = l.Scan();
-  EXPECT_EQ(t.value().value.type, TokenType::StringValue);
-  EXPECT_EQ(t.value().value.value, "movf asdf #$@# 432432 ies");
-  t = l.Scan();
-  EXPECT_EQ(t.has_value(), false);
+  Token t = l.Scan().value().unwrap();
+  EXPECT_EQ(t.type, TokenType::Select);
+  EXPECT_EQ(t.value, "SELECT");
+  t = l.Scan().value().unwrap();
+  EXPECT_EQ(t.type, TokenType::From);
+  EXPECT_EQ(t.value, "FROM");
+  t = l.Scan().value().unwrap();
+  EXPECT_EQ(t.type, TokenType::StringValue);
+  EXPECT_EQ(t.value, "movf asdf #$@# 432432 ies");
+  
+  EXPECT_EQ(l.Scan().has_value(), false);
 }
 
 TEST(LexerTest, LexerScanSymbol) {
   Lexer l{".    ="};
-  std::optional<Result<Token>> t = l.Scan();
-  EXPECT_EQ(t.value().value.type, TokenType::Period);
-  t = l.Scan();
-  EXPECT_EQ(t.value().value.type, TokenType::Equal);
+  Token t = l.Scan().value().unwrap();
+  EXPECT_EQ(t.type, TokenType::Period);
+  t = l.Scan().value().unwrap();
+  EXPECT_EQ(t.type, TokenType::Equal);
 }
 
 TEST(LexerTest, LexerScanNumber) {
   Lexer l{"9000234234fasdf"};
-  std::optional<Result<Token>> t = l.Scan();
-  EXPECT_EQ(t.value().value.type, TokenType::NumberValue);
-  EXPECT_EQ(t.value().value.value, "9000234234");
-  t = l.Scan();
-  EXPECT_EQ(t.value().value.type, TokenType::IdentifierValue);
-  EXPECT_EQ(t.value().value.value, "fasdf");
+  Token t = l.Scan().value().unwrap();
+  EXPECT_EQ(t.type, TokenType::NumberValue);
+  EXPECT_EQ(t.value, "9000234234");
+  t = l.Scan().value().unwrap();
+  EXPECT_EQ(t.type, TokenType::IdentifierValue);
+  EXPECT_EQ(t.value, "fasdf");
 }
 
 TEST(LexerTest, LexerIterator) {
   LexerIterator l{". ! SELECT INSERT WHAT 'testing' 1299 / string"};
-  EXPECT_EQ(l.Peek().value().value.type, TokenType::Period);
-  EXPECT_EQ(l.Next().value().value.type, TokenType::Period);
-  EXPECT_EQ(l.Peek().value().value.type, TokenType::Exclamation);
-  EXPECT_EQ(l.Next().value().value.type, TokenType::Exclamation);
-  EXPECT_EQ(l.Peek().value().value.type, TokenType::Select);
-  EXPECT_EQ(l.Next().value().value.type, TokenType::Select);
-  EXPECT_EQ(l.Peek().value().value.type, TokenType::Insert);
-  EXPECT_EQ(l.Next().value().value.type, TokenType::Insert);
-  EXPECT_EQ(l.Peek().value().value.type, TokenType::IdentifierValue);
-  EXPECT_EQ(l.Next().value().value.type, TokenType::IdentifierValue);
-  EXPECT_EQ(l.Peek().value().value.type, TokenType::StringValue);
-  EXPECT_EQ(l.Next().value().value.type, TokenType::StringValue);
-  EXPECT_EQ(l.Peek().value().value.type, TokenType::NumberValue);
-  EXPECT_EQ(l.Next().value().value.type, TokenType::NumberValue);
-  EXPECT_EQ(l.Peek().value().value.type, TokenType::Slash);
-  EXPECT_EQ(l.Next().value().value.type, TokenType::Slash);
-  EXPECT_EQ(l.Peek().value().value.type, TokenType::String);
-  EXPECT_EQ(l.Next().value().value.type, TokenType::String);
-  EXPECT_EQ(l.Peek().has_value(), false);
-  EXPECT_EQ(l.Next().has_value(), false);
+  EXPECT_EQ(l.Peek().unwrap().type, TokenType::Period);
+  EXPECT_EQ(l.Next().unwrap().type, TokenType::Period);
+  EXPECT_EQ(l.Peek().unwrap().type, TokenType::Exclamation);
+  EXPECT_EQ(l.Next().unwrap().type, TokenType::Exclamation);
+  EXPECT_EQ(l.Peek().unwrap().type, TokenType::Select);
+  EXPECT_EQ(l.Next().unwrap().type, TokenType::Select);
+  EXPECT_EQ(l.Peek().unwrap().type, TokenType::Insert);
+  EXPECT_EQ(l.Next().unwrap().type, TokenType::Insert);
+  EXPECT_EQ(l.Peek().unwrap().type, TokenType::IdentifierValue);
+  EXPECT_EQ(l.Next().unwrap().type, TokenType::IdentifierValue);
+  EXPECT_EQ(l.Peek().unwrap().type, TokenType::StringValue);
+  EXPECT_EQ(l.Next().unwrap().type, TokenType::StringValue);
+  EXPECT_EQ(l.Peek().unwrap().type, TokenType::NumberValue);
+  EXPECT_EQ(l.Next().unwrap().type, TokenType::NumberValue);
+  EXPECT_EQ(l.Peek().unwrap().type, TokenType::Slash);
+  EXPECT_EQ(l.Next().unwrap().type, TokenType::Slash);
+  EXPECT_EQ(l.Peek().unwrap().type, TokenType::String);
+  EXPECT_EQ(l.Next().unwrap().type, TokenType::String);
+  EXPECT_EQ(l.Peek().isErr(), true);
+  EXPECT_EQ(l.Next().isErr(), true);
 }

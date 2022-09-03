@@ -2,11 +2,12 @@
 
 #include <string>
 
-struct Error {
-    enum ErrorType { Abort, Config, Internal, Parse, ReadOnly, Serialization, Value };
 
+enum class ErrorType { Abort, Config, Internal, Lex, Parse, ReadOnly, Serialization, Value };
+
+struct Error {
     ErrorType type;
     std::string message;
 
-    Error(ErrorType kind, std::string text);
+    Error(ErrorType type, std::string text) : type{type}, message{message} {}
 };
