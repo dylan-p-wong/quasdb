@@ -115,7 +115,7 @@ TEST(LexerTest, LexerScanNumber) {
 }
 
 TEST(LexerTest, LexerIterator) {
-  LexerIterator l{". ! SELECT INSERT WHAT 'testing' 1299 / string"};
+  LexerIterator l{". ! SELECT INSERT WHAT 'testing' 1299 / string FOREIGN"};
   EXPECT_EQ(l.Peek().unwrap().type, TokenType::Period);
   EXPECT_EQ(l.Next().unwrap().type, TokenType::Period);
   EXPECT_EQ(l.Peek().unwrap().type, TokenType::Exclamation);
@@ -134,6 +134,8 @@ TEST(LexerTest, LexerIterator) {
   EXPECT_EQ(l.Next().unwrap().type, TokenType::Slash);
   EXPECT_EQ(l.Peek().unwrap().type, TokenType::String);
   EXPECT_EQ(l.Next().unwrap().type, TokenType::String);
+  EXPECT_EQ(l.Peek().unwrap().type, TokenType::Foreign);
+  EXPECT_EQ(l.Next().unwrap().type, TokenType::Foreign);
   EXPECT_EQ(l.Peek().isErr(), true);
   EXPECT_EQ(l.Next().isErr(), true);
 }

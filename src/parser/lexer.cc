@@ -24,6 +24,7 @@ TokenType ValueToTokenType(std::string v) {
     if (v == "EXPLAIN") return TokenType::Explain;
     if (v == "FALSE") return TokenType::False;
     if (v == "FLOAT") return TokenType::Float;
+    if (v == "FOREIGN") return TokenType::Foreign;
     if (v == "FROM") return TokenType::From;
     if (v == "GROUP") return TokenType::Group;
     if (v == "HAVING") return TokenType::Having;

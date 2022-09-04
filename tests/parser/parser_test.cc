@@ -63,6 +63,16 @@ TEST(ParserTest, ParserBasicCreateTable3) {
   EXPECT_EQ(c->columns.at(0).unique, true);
 }
 
+TEST(ParserTest, ParserBasicCreateTable4) {
+  Parser p{"CREATE TABLE testing (x integer FOREIGN KEY REFERENCES derp(x), y varchar)"};
+  auto s = p.ParseStatement();
+  EXPECT_EQ(s.isOk(), true);
+  EXPECT_EQ(s.unwrap()->type, StatementType::CreateTable);
+  CreateTable * c = dynamic_cast<CreateTable*>(s.unwrap());
+  EXPECT_EQ(c->columns.at(0).references.value().first, "derp");
+  EXPECT_EQ(c->columns.at(0).references.value().second, "x");
+}
+
 TEST(ParserTest, ParserInvalidDropTable) {
   Parser p{"DROP TABLE 'test'"};
   EXPECT_EQ(p.ParseStatement().isErr(), true);

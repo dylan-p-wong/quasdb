@@ -58,7 +58,7 @@ Result<Column, Error> Parser::ParseColumn() {
         return Err(Error{ErrorType::Parse, "Expected token but found another."});
     }
 
-    auto column_keyword = [](Token t) { return t.type ==  TokenType::Primary || t.type == TokenType::Null || t.type == TokenType::Not || t.type == TokenType::Default || t.type == TokenType::Unique || t.type == TokenType::Index || t.type == TokenType::References; };
+    auto column_keyword = [](Token t) { return t.type ==  TokenType::Primary || t.type == TokenType::Null || t.type == TokenType::Not || t.type == TokenType::Default || t.type == TokenType::Unique || t.type == TokenType::Index || t.type == TokenType::Foreign; };
 
     std::optional<Token> t = NextIf(column_keyword);
 
@@ -68,24 +68,46 @@ Result<Column, Error> Parser::ParseColumn() {
                 return Err(Error{ErrorType::Parse, "Expected token KEY but found another."});
             }
             c.primary_key = true;
-        } else if (t.value().type == TokenType::Null) {
-
         } else if (t.value().type == TokenType::Not) {
-            
+            if (NextExpect(TokenType::Null).isErr()) {
+                return Err(Error{ErrorType::Parse, "Expected token NULL but found another."});
+            }
+            c.nullable = false;
         } else if (t.value().type == TokenType::Default) {
             
         } else if (t.value().type == TokenType::Unique) {
             c.unique = true;
         } else if (t.value().type == TokenType::Index) {
             c.index = true;
-        } else if (t.value().type == TokenType::References) {
-            // Result<Token, Error> nameToken = NextExpect(TokenType::IdentifierValue);
+        } else if (t.value().type == TokenType::Foreign) {
+            if (NextExpect(TokenType::Key).isErr()) {
+                return Err(Error{ErrorType::Parse, "Expected token KEY but found another."});
+            }
+            if (NextExpect(TokenType::References).isErr()) {
+                return Err(Error{ErrorType::Parse, "Expected token REFERENCES but found another."});
+            }
 
-            // if (nameToken.isErr()) {
-            //     return Err(nameToken.unwrapErr());
-            // }
+            Result<Token, Error> tableToken = NextExpect(TokenType::IdentifierValue);
 
-            // c.references = nameToken.unwrap().value;
+            if (tableToken.isErr()) {
+                return Err(tableToken.unwrapErr());
+            }
+
+            if (NextExpect(TokenType::OpenParen).isErr()) {
+                return Err(Error{ErrorType::Parse, "Expected token OPENPAREN but found another."});
+            }
+
+            Result<Token, Error> columnToken = NextExpect(TokenType::IdentifierValue);
+
+            if (columnToken.isErr()) {
+                return Err(columnToken.unwrapErr());
+            }
+
+            c.references = std::make_pair(tableToken.unwrap().value, columnToken.unwrap().value);
+
+            if (NextExpect(TokenType::CloseParen).isErr()) {
+                return Err(Error{ErrorType::Parse, "Expected token CLOSEDPAREN but found another."});
+            }
         } else {
             return Err(Error{ErrorType::Parse, "Expected token but found another."});
         }

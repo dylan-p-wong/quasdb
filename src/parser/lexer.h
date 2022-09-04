@@ -53,6 +53,7 @@ enum TokenType {
     Explain,
     False,
     Float,
+    Foreign,
     From,
     Group,
     Having,
