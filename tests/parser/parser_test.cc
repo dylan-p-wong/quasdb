@@ -73,6 +73,17 @@ TEST(ParserTest, ParserBasicCreateTable4) {
   EXPECT_EQ(c->columns.at(0).references.value().second, "x");
 }
 
+TEST(ParserTest, ParserBasicCreateTableDefault) {
+  Parser p{"CREATE TABLE testing (x integer DEFAULT 4)"};
+  auto s = p.ParseStatement();
+  EXPECT_EQ(s.isOk(), true);
+  EXPECT_EQ(s.unwrap()->type, StatementType::CreateTable);
+  CreateTable * c = dynamic_cast<CreateTable*>(s.unwrap());
+  IntegerLiteral * i = dynamic_cast<IntegerLiteral*>(c->columns.at(0).default_value);
+  EXPECT_NE(i, nullptr);
+  EXPECT_EQ(i->value, 4);
+}
+
 TEST(ParserTest, ParserInvalidDropTable) {
   Parser p{"DROP TABLE 'test'"};
   EXPECT_EQ(p.ParseStatement().isErr(), true);
@@ -87,4 +98,28 @@ TEST(ParserTest, ParserValidDropTable) {
   EXPECT_EQ(s.unwrap()->type, StatementType::DropTable);
   DropTable * d = dynamic_cast<DropTable*>(s.unwrap());
   EXPECT_EQ(d->name, "test");
+}
+
+TEST(ParserTest, ParserExpression1) {
+  Parser p{"4"};
+  auto s = p.ParseExpression(0);
+  EXPECT_EQ(s.isOk(), true);
+  IntegerLiteral * i = dynamic_cast<IntegerLiteral*>(s.unwrap());
+  EXPECT_NE(i, nullptr);
+}
+
+TEST(ParserTest, ParserExpression2) {
+  Parser p{"4 AND 4"};
+  auto s = p.ParseExpression(0);
+  EXPECT_EQ(s.isOk(), true);
+  Infix * i = dynamic_cast<Infix*>(s.unwrap());
+  EXPECT_NE(i, nullptr);
+}
+
+TEST(ParserTest, ParserExpression3) {
+  Parser p{"stest OR sedt"};
+  auto s = p.ParseExpression(0);
+  EXPECT_EQ(s.isOk(), true);
+  Infix * i = dynamic_cast<Infix*>(s.unwrap());
+  EXPECT_NE(i, nullptr);
 }

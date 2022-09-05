@@ -1,6 +1,45 @@
+#include <limits>
+
 #include "parser.h"
 #include "./statement/create_table.h"
 #include "./statement/drop_table.h"
+
+namespace {
+    int GetPrecedenceInfix(TokenType t) {
+        if (t == TokenType::Or) {
+            return 1;
+        } else if (t == TokenType::And) {
+            return 2;
+        } else {
+            return -1;
+        }
+    }
+
+    enum class AssociativityType { Left, Right };
+
+    AssociativityType GetAssociativityInfix(TokenType t) {
+        if (t == TokenType::Caret) {
+            return AssociativityType::Right;
+        }
+
+        return AssociativityType::Left;
+    }
+
+    Expression * GetOperatorInfix(TokenType t, Expression * lhs, Expression * rhs) {
+        switch (t) {
+            case TokenType::Or:
+                return new Infix{OperationType::Or, lhs, rhs};
+            case TokenType::And:
+                return new Infix{OperationType::And, lhs, rhs};
+            default:
+                return nullptr; // Error?
+        }
+    }
+
+    bool IsInfixOperatorKeyword (Token t) { 
+        return t.type ==  TokenType::And || t.type == TokenType::Or; 
+    };
+}
 
 Parser::Parser(std::string input) : lexer{std::unique_ptr<LexerIterator>(new LexerIterator{input})} {}
 
@@ -37,7 +76,7 @@ Result<Column, Error> Parser::ParseColumn() {
     if (nameToken.isErr()) {
         return Err(nameToken.unwrapErr());
     }
-
+    
     c.name = nameToken.unwrap().value;
 
     std::optional<Token> typeToken = NextIf([](Token t) { return t.type == TokenType::Integer || t.type == TokenType::Float || t.type == TokenType::Varchar || t.type == TokenType::Boolean; });
@@ -74,7 +113,13 @@ Result<Column, Error> Parser::ParseColumn() {
             }
             c.nullable = false;
         } else if (t.value().type == TokenType::Default) {
-            
+            Result<Expression *, Error> r = ParseExpression(0);
+
+            if (r.isErr()) {
+                return Err(r.unwrapErr());
+            }
+
+            c.default_value = r.unwrap();
         } else if (t.value().type == TokenType::Unique) {
             c.unique = true;
         } else if (t.value().type == TokenType::Index) {
@@ -116,6 +161,122 @@ Result<Column, Error> Parser::ParseColumn() {
     }
 
     return Ok(c);
+}
+
+// Precedence Climbing Algorithm
+// https://eli.thegreenplace.net/2012/08/02/parsing-expressions-by-precedence-climbing
+Result<Expression*, Error> Parser::ParseExpression(int minimum_precedence) {
+    Result<Expression*, Error> result_w_error = ParseExpressionAtom();
+
+    if (result_w_error.isErr()) {
+        return Err(result_w_error.unwrapErr());
+    }
+
+    Expression * result = result_w_error.unwrap();
+    
+    std::optional<Token> t = NextIf(IsInfixOperatorKeyword);
+
+    while (t.has_value() && (t.value().type) >= minimum_precedence) {
+        int next_minimum_precedence = minimum_precedence;
+
+        if (GetAssociativityInfix(t.value().type) == AssociativityType::Left) {
+            ++next_minimum_precedence;
+        }
+
+        Result<Expression*, Error> right_hand_side = ParseExpression(next_minimum_precedence);
+        
+        if (right_hand_side.isErr()) {
+            return Err(right_hand_side.unwrapErr());
+        }
+        
+        result = GetOperatorInfix(t.value().type, result, right_hand_side.unwrap());
+        t = NextIf(IsInfixOperatorKeyword);
+    }
+    
+    return Ok(result);
+}
+
+Result<Expression*, Error> Parser::ParseExpressionAtom() {
+    Result<Token, Error> t = lexer->Next();
+
+    if (t.isErr()) {
+        return Err(t.unwrapErr());
+    }
+
+    switch (t.unwrap().type) {
+        case TokenType::IdentifierValue:
+        {
+            std::string from = "";
+            std::string field = t.unwrap().value;
+
+            if (NextIf([](Token t){ return t.type == TokenType::Period; })) {
+                Result<Token, Error> fieldToken = NextExpect(TokenType::IdentifierValue);
+
+                if (fieldToken.isErr()) {
+                    return Err(fieldToken.unwrapErr());
+                }
+
+                from = field;
+                field = fieldToken.unwrap().value;
+            }
+            Expression * res = new Field(from, field);
+            return Ok(res);
+        }
+        case TokenType::NumberValue:
+        {
+            try {
+                Expression * res = new IntegerLiteral{std::stoi(t.unwrap().value)};
+                return Ok(res);
+            } catch (...) {
+                return Err(Error{ErrorType::Parse, "Error parsing number value."});
+            }
+        }
+        case TokenType::OpenParen:
+        {
+            Result<Expression*, Error> expression = ParseExpression(0);
+            if (expression.isErr()) {
+                return Err(expression.unwrapErr());
+            }
+
+            if (NextExpect(TokenType::CloseParen).isErr()) {
+                return Err(Error{ErrorType::Parse, "Expected token CloseParen but found another."});
+            }
+
+            return Ok(expression.unwrap());
+        }
+        case TokenType::StringValue:
+        {
+            Expression * res = new StringLiteral{t.unwrap().value};
+            return Ok(res);
+        }
+        case TokenType::False:
+        {
+            Expression * res = new BooleanLiteral{false};
+            return Ok(res);
+        }
+        case TokenType::True:
+        {
+            Expression * res = new BooleanLiteral{false};
+            return Ok(res);
+        }
+        case TokenType::Infinity:
+        {
+            Expression * res = new FloatLiteral{std::numeric_limits<float>::max()};
+            return Ok(res);
+        }
+        case TokenType::NaN:
+        {
+            Expression * res = new FloatLiteral{std::numeric_limits<float>::quiet_NaN()};
+            return Ok(res);
+        }
+        case TokenType::Null:
+        {
+            Expression * res = new NullLiteral{};
+            return Ok(res);
+        }       
+    default:
+        return Err(Error{ErrorType::Parse, "Expected expression atom, found another."});
+    }
 }
 
 Result<Statement*, Error> Parser::ParseStatement() {

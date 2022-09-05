@@ -18,6 +18,8 @@ public:
     std::optional<Token> NextIf(bool (*predicate)(Token));
     Result<Token, Error> NextExpect(TokenType expect);
     Result<Column, Error> ParseColumn();
+    Result<Expression*, Error> ParseExpression(int minimum_precedence);
+    Result<Expression*, Error> ParseExpressionAtom();
     Result<Statement*, Error> ParseStatement();
     Result<Statement*, Error> ParseCreateTable();
     Result<Statement*, Error> ParseDropTable();
