@@ -1,33 +1,86 @@
 #include "expression.h"
 
+Expression::Expression(ExpressionType type) : type{type} {}
 Expression::~Expression() {}
 
-Field::Field(std::string from, std::string field) : from{from}, field{field} {}
+Field::Field(std::string from, std::string field) : Expression{ExpressionType::Field}, from{from}, field{field} {}
 Field::~Field() {}
+std::string Field::Display() {
+    return from.size() > 0 ? from + "." + field : field;
+}
 
-Literal::Literal(LiteralType type) : type{type} {}
-Literal::~Literal() {}
-
-StringLiteral::StringLiteral(std::string value) : Literal{LiteralType::String}, value{value} {}
+StringLiteral::StringLiteral(std::string value) : Expression{ExpressionType::StringLiteral}, value{value} {}
 StringLiteral::~StringLiteral() {}
+std::string StringLiteral::Display() {
+    return value;
+}
 
-FloatLiteral::FloatLiteral(float value) : Literal{LiteralType::Float}, value{value} {}
+FloatLiteral::FloatLiteral(float value) : Expression{ExpressionType::FloatLiteral}, value{value} {}
 FloatLiteral::~FloatLiteral() {}
+std::string FloatLiteral::Display() {
+    return std::to_string(value);
+}
 
-IntegerLiteral::IntegerLiteral(int value) : Literal{LiteralType::Integer}, value{value} {}
+IntegerLiteral::IntegerLiteral(int value) : Expression{ExpressionType::IntegerLiteral}, value{value} {}
 IntegerLiteral::~IntegerLiteral() {}
+std::string IntegerLiteral::Display() {
+    return std::to_string(value);
+}
 
-BooleanLiteral::BooleanLiteral(bool value) : Literal{LiteralType::Boolean}, value{value} {}
+BooleanLiteral::BooleanLiteral(bool value) : Expression{ExpressionType::BooleanLiteral}, value{value} {}
 BooleanLiteral::~BooleanLiteral() {}
+std::string BooleanLiteral::Display() {
+    return value ? "TRUE" : "FALSE";
+}
 
-NullLiteral::NullLiteral() : Literal{LiteralType::Null} {}
+NullLiteral::NullLiteral() : Expression{ExpressionType::NullLiteral} {}
 NullLiteral::~NullLiteral() {}
+std::string NullLiteral::Display() {
+    return "NULL";
+}
 
-Operation::Operation(OperationType type) : type{type} {}
-Operation::~Operation() {}
+PrefixOperation::PrefixOperation(ExpressionType t, Expression * e) : Expression{t}, e{e} {}
+std::string PrefixOperation::Display() {
+    return "(PREFIX " + e->Display() + ")"; 
+}
 
-Prefix::Prefix(OperationType t, Expression * e) : Operation{t}, e{e} {}
+PostfixOperation::PostfixOperation(ExpressionType t, Expression * e) : Expression{t}, e{e} {}
+std::string PostfixOperation::Display() {
+    if (type == ExpressionType::IsNull) {
+        return "(" + e->Display() + " IS NULL)"; 
+    } else if (type == ExpressionType::Factorial) {
+        return "(" + e->Display() + "!)"; 
+    }
+}
 
-Postfix::Postfix(OperationType t, Expression * e) : Operation{t}, e{e} {}
 
-Infix::Infix(OperationType t, Expression * left, Expression * right) : Operation{t}, left{left}, right{right} {}
+InfixOperation::InfixOperation(ExpressionType t, Expression * l, Expression * r) : Expression{t}, left{l}, right{r} {}
+std::string InfixOperation::Display() {
+    if (type == ExpressionType::And) {
+        return "(" + left->Display() + " AND " + right->Display() + ")"; 
+    } else if (type == ExpressionType::Or) {
+        return "(" + left->Display() + " OR " + right->Display() + ")"; 
+    } else if (type == ExpressionType::Add) {
+        return "(" + left->Display() + " + " + right->Display() + ")"; 
+    } else if (type == ExpressionType::Subtract) {
+        return "(" + left->Display() + " - " + right->Display() + ")"; 
+    } else if (type == ExpressionType::Multiply) {
+        return "(" + left->Display() + " * " + right->Display() + ")"; 
+    } else if (type == ExpressionType::Divide) {
+        return "(" + left->Display() + " / " + right->Display() + ")"; 
+    } else if (type == ExpressionType::Exponentiate) {
+        return "(" + left->Display() + " ^ " + right->Display() + ")"; 
+    } else if (type == ExpressionType::GreaterThan) {
+        return "(" + left->Display() + " > " + right->Display() + ")"; 
+    } else if (type == ExpressionType::LessThan) {
+        return "(" + left->Display() + " < " + right->Display() + ")"; 
+    } else if (type == ExpressionType::Modulo) {
+        return "(" + left->Display() + " % " + right->Display() + ")"; 
+    } else if (type == ExpressionType::Equal) {
+        return "(" + left->Display() + " = " + right->Display() + ")"; 
+    } else if (type == ExpressionType::NotEqual) {
+        return "(" + left->Display() + " != " + right->Display() + ")"; 
+    } else {
+        return "(" + left->Display() + " ERROR " + right->Display() + ")"; 
+    }
+}

@@ -5,11 +5,22 @@
 #include "./statement/drop_table.h"
 
 namespace {
+    // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/operator-precedence-transact-sql?view=sql-server-ver16
     int GetPrecedenceInfix(TokenType t) {
-        if (t == TokenType::Or) {
-            return 1;
+        if (t == TokenType::Caret) {
+            return 7;
+        } else if (t == TokenType::Asterisk || t == TokenType::Slash || t == TokenType::Percent) {
+            return 6;
+        } else if (t == TokenType::Plus || t == TokenType::Minus) {
+            return 5;
+        } else if (t == TokenType::GreaterThan || t == TokenType::LessThan || t == TokenType::LessOrGreaterThan || t == TokenType::LessThanOrEqual) {
+            return 4;
+        } else if (t == TokenType::Equal || t == TokenType::NotEqual) {
+            return 3;
         } else if (t == TokenType::And) {
             return 2;
+        } else if (t == TokenType::Or) {
+            return 1;
         } else {
             return -1;
         }
@@ -28,16 +39,36 @@ namespace {
     Expression * GetOperatorInfix(TokenType t, Expression * lhs, Expression * rhs) {
         switch (t) {
             case TokenType::Or:
-                return new Infix{OperationType::Or, lhs, rhs};
+                return new InfixOperation{ExpressionType::Or, lhs, rhs};
             case TokenType::And:
-                return new Infix{OperationType::And, lhs, rhs};
+                return new InfixOperation{ExpressionType::And, lhs, rhs};
+            case TokenType::Equal:
+                return new InfixOperation{ExpressionType::Equal, lhs, rhs};
+            case TokenType::NotEqual:
+                return new InfixOperation{ExpressionType::NotEqual, lhs, rhs};
+            case TokenType::GreaterThan:
+                return new InfixOperation{ExpressionType::GreaterThan, lhs, rhs};
+            case TokenType::LessThan:
+                return new InfixOperation{ExpressionType::LessThan, lhs, rhs};
+            case TokenType::Plus:
+                return new InfixOperation{ExpressionType::Add, lhs, rhs};
+            case TokenType::Minus:
+                return new InfixOperation{ExpressionType::Minus, lhs, rhs};
+            case TokenType::Asterisk:
+                return new InfixOperation{ExpressionType::Multiply, lhs, rhs};
+            case TokenType::Slash:
+                return new InfixOperation{ExpressionType::Divide, lhs, rhs};
+            case TokenType::Percent:
+                return new InfixOperation{ExpressionType::Modulo, lhs, rhs};
+            case TokenType::Caret:
+                return new InfixOperation{ExpressionType::Exponentiate, lhs, rhs};
             default:
                 return nullptr; // Error?
         }
     }
 
     bool IsInfixOperatorKeyword (Token t) { 
-        return t.type ==  TokenType::And || t.type == TokenType::Or; 
+        return GetPrecedenceInfix(t.type) > 0; 
     };
 }
 
@@ -174,10 +205,10 @@ Result<Expression*, Error> Parser::ParseExpression(int minimum_precedence) {
 
     Expression * result = result_w_error.unwrap();
     
-    std::optional<Token> t = NextIf(IsInfixOperatorKeyword);
+    while (lexer->Peek().isOk() && IsInfixOperatorKeyword(lexer->Peek().unwrap()) && GetPrecedenceInfix(lexer->Peek().unwrap().type) >= minimum_precedence) {
+        std::optional<Token> t = NextIf(IsInfixOperatorKeyword);
 
-    while (t.has_value() && (t.value().type) >= minimum_precedence) {
-        int next_minimum_precedence = minimum_precedence;
+        int next_minimum_precedence = GetPrecedenceInfix(t.value().type);
 
         if (GetAssociativityInfix(t.value().type) == AssociativityType::Left) {
             ++next_minimum_precedence;
@@ -190,7 +221,9 @@ Result<Expression*, Error> Parser::ParseExpression(int minimum_precedence) {
         }
         
         result = GetOperatorInfix(t.value().type, result, right_hand_side.unwrap());
-        t = NextIf(IsInfixOperatorKeyword);
+        if (result == nullptr) {
+            return Err(Error{ErrorType::Parse, "Error getting infix operator."});
+        }
     }
     
     return Ok(result);

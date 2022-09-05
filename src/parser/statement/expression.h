@@ -4,10 +4,44 @@
 
 #include "../lexer.h"
 
-enum class LiteralType { Null, Boolean, Integer, Float, String };
+enum class ExpressionType {
+    // Postfix
+    IsNull, 
+    Factorial,
+    // Prefix
+    Minus,
+    Not,
+    Plus,
+    // Field
+    Field,
+    // Literals 
+    NullLiteral, 
+    BooleanLiteral, 
+    IntegerLiteral, 
+    FloatLiteral, 
+    StringLiteral,
+    // Logical Infix
+    And, 
+    Or,
+    // Math Infix
+    Add,
+    Subtract,
+    Multiply,
+    Divide,
+    Exponentiate,
+    GreaterThan,
+    LessThan,
+    Modulo,
+    // Equality
+    Equal,
+    NotEqual
+};
 
 class Expression {
 public:
+    ExpressionType type;
+    virtual std::string Display() = 0;
+    Expression(ExpressionType type);
     virtual ~Expression() = 0;
 };
 
@@ -17,73 +51,66 @@ public:
     std::string field;
     Field(std::string from, std::string field);
     ~Field();
+    std::string Display() override;
 };
 
-class Literal : public Expression {
-public:
-    LiteralType type;
-    Literal(LiteralType type);
-    virtual ~Literal() = 0;
-};
-
-class StringLiteral : public Literal {
+class StringLiteral : public Expression {
 public:
     std::string value;
     StringLiteral(std::string value);
     ~StringLiteral();
+    std::string Display() override;
 };
 
-class FloatLiteral : public Literal {
+class FloatLiteral : public Expression {
 public:
     float value;
     FloatLiteral(float value);
     ~FloatLiteral();
+    std::string Display() override;
 };
 
-class IntegerLiteral : public Literal {
+class IntegerLiteral : public Expression {
 public:
     int value;
     IntegerLiteral(int value);
     ~IntegerLiteral();
+    std::string Display() override;
 };
 
-class BooleanLiteral : public Literal {
+class BooleanLiteral : public Expression {
 public:
     bool value;
     BooleanLiteral(bool value);
     ~BooleanLiteral();
+    std::string Display() override;
 };
 
-class NullLiteral : public Literal {
+class NullLiteral : public Expression {
 public:
     NullLiteral();
     ~NullLiteral();
+    std::string Display() override;
 };
 
-enum class OperationType { Or, And };
-
-class Operation : public Expression {
-    OperationType type;
-public:
-    Operation(OperationType type);
-    virtual ~Operation() = 0;
-};
-
-class Prefix : public Operation {
+class PrefixOperation : public Expression {
 public:
     Expression * e;
-    Prefix(OperationType t, Expression * e);
+    PrefixOperation(ExpressionType t, Expression * e);
+    std::string Display() override;
 };
 
-class Postfix : public Operation {
+class PostfixOperation : public Expression {
 public:
     Expression * e;
-    Postfix(OperationType t, Expression * e);
+    PostfixOperation(ExpressionType t, Expression * e);
+    std::string Display() override;
 };
 
-class Infix : public Operation {
+class InfixOperation : public Expression {
 public:
     Expression * left;
     Expression * right;
-    Infix(OperationType t, Expression * left, Expression * right);
+    InfixOperation(ExpressionType t, Expression * left, Expression * right);
+    std::string Display() override;
 };

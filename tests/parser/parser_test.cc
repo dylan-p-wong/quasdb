@@ -112,14 +112,88 @@ TEST(ParserTest, ParserExpression2) {
   Parser p{"4 AND 4"};
   auto s = p.ParseExpression(0);
   EXPECT_EQ(s.isOk(), true);
-  Infix * i = dynamic_cast<Infix*>(s.unwrap());
+  InfixOperation * i = dynamic_cast<InfixOperation*>(s.unwrap());
   EXPECT_NE(i, nullptr);
+  EXPECT_EQ(i->Display(), "(4 AND 4)");
 }
 
 TEST(ParserTest, ParserExpression3) {
   Parser p{"stest OR sedt"};
   auto s = p.ParseExpression(0);
   EXPECT_EQ(s.isOk(), true);
-  Infix * i = dynamic_cast<Infix*>(s.unwrap());
+  InfixOperation * i = dynamic_cast<InfixOperation*>(s.unwrap());
   EXPECT_NE(i, nullptr);
+  EXPECT_EQ(i->Display(), "(stest OR sedt)");
+}
+
+TEST(ParserTest, ParserExpression4) {
+  Parser p{"stest OR sedt AND ttt"};
+  auto s = p.ParseExpression(0);
+  EXPECT_EQ(s.isOk(), true);
+  InfixOperation * i = dynamic_cast<InfixOperation*>(s.unwrap());
+  EXPECT_NE(i, nullptr);
+  EXPECT_EQ(i->Display(), "(stest OR (sedt AND ttt))");
+}
+
+TEST(ParserTest, ParserExpression5) {
+  Parser p{"stest AND sedt OR ttt"};
+  auto s = p.ParseExpression(0);
+  EXPECT_EQ(s.isOk(), true);
+  InfixOperation * i = dynamic_cast<InfixOperation*>(s.unwrap());
+  EXPECT_NE(i, nullptr);
+  EXPECT_EQ(i->Display(), "((stest AND sedt) OR ttt)");
+}
+
+TEST(ParserTest, ParserExpression6) {
+  Parser p{"stest OR sedt OR ttt"};
+  auto s = p.ParseExpression(0);
+  EXPECT_EQ(s.isOk(), true);
+  InfixOperation * i = dynamic_cast<InfixOperation*>(s.unwrap());
+  EXPECT_NE(i, nullptr);
+  EXPECT_EQ(i->Display(), "((stest OR sedt) OR ttt)");
+}
+
+TEST(ParserTest, ParserExpression7) {
+  Parser p{"4 * 4 + 7"};
+  auto s = p.ParseExpression(0);
+  EXPECT_EQ(s.isOk(), true);
+  InfixOperation * i = dynamic_cast<InfixOperation*>(s.unwrap());
+  EXPECT_NE(i, nullptr);
+  EXPECT_EQ(s.unwrap()->Display(), "((4 * 4) + 7)");
+}
+
+TEST(ParserTest, ParserExpression8) {
+  Parser p{"4 + 4 * 7"};
+  auto s = p.ParseExpression(0);
+  EXPECT_EQ(s.isOk(), true);
+  InfixOperation * i = dynamic_cast<InfixOperation*>(s.unwrap());
+  EXPECT_NE(i, nullptr);
+  EXPECT_EQ(s.unwrap()->Display(), "(4 + (4 * 7))");
+}
+
+TEST(ParserTest, ParserExpression9) {
+  Parser p{"2 ^ 3 ^ 4"};
+  auto s = p.ParseExpression(0);
+  EXPECT_EQ(s.isOk(), true);
+  InfixOperation * i = dynamic_cast<InfixOperation*>(s.unwrap());
+  EXPECT_NE(i, nullptr);
+  EXPECT_EQ(s.unwrap()->Display(), "(2 ^ (3 ^ 4))");
+}
+
+TEST(ParserTest, ParserExpression10) {
+  Parser p{"7 * 3 ^ 4"};
+  auto s = p.ParseExpression(0);
+  EXPECT_EQ(s.isOk(), true);
+  InfixOperation * i = dynamic_cast<InfixOperation*>(s.unwrap());
+  EXPECT_NE(i, nullptr);
+  EXPECT_EQ(s.unwrap()->Display(), "(7 * (3 ^ 4))");
+}
+
+TEST(ParserTest, ParserExpression11) {
+  Parser p{"2 * (3 + 5) * 7"};
+  auto s = p.ParseExpression(0);
+  EXPECT_EQ(s.isOk(), true);
+  InfixOperation * i = dynamic_cast<InfixOperation*>(s.unwrap());
+  EXPECT_NE(i, nullptr);
+  EXPECT_EQ(s.unwrap()->Display(), "((2 * (3 + 5)) * 7)");
 }
