@@ -226,14 +226,14 @@ TEST(ParserTest, ParserExpression15) {
   Parser p{"test.fielder!! = NULL"};
   auto s = p.ParseExpression(0);
   EXPECT_EQ(s.isOk(), true);
-  EXPECT_EQ(s.unwrap()->Display(), "(((test.fielder!)!) = NULL)");
+  EXPECT_EQ(s.unwrap()->Display(), "(((test.fielder)!)! = NULL)");
 }
 
 TEST(ParserTest, ParserExpression16) {
   Parser p{"(test.fielder) IS NULL AND 4!"};
   auto s = p.ParseExpression(0);
   EXPECT_EQ(s.isOk(), true);
-  EXPECT_EQ(s.unwrap()->Display(), "((test.fielder IS NULL) AND (4!))");
+  EXPECT_EQ(s.unwrap()->Display(), "((test.fielder IS NULL) AND (4)!)");
 }
 
 TEST(ParserTest, ParserExpression17) {
@@ -248,3 +248,17 @@ TEST(ParserTest, ParserExpression18) {
   EXPECT_EQ(s.isOk(), false);
 }
 
+// Prefix
+TEST(ParserTest, ParserExpression19) {
+  Parser p{"+4 + -4"};
+  auto s = p.ParseExpression(0);
+  EXPECT_EQ(s.isOk(), true);
+  EXPECT_EQ(s.unwrap()->Display(), "(ASSERT(4) + NEGATE(4))");
+}
+
+TEST(ParserTest, ParserExpression20) {
+  Parser p{"NOT 4! + --4"};
+  auto s = p.ParseExpression(0);
+  EXPECT_EQ(s.isOk(), true);
+  EXPECT_EQ(s.unwrap()->Display(), "((NOT(4))! + NEGATE(NEGATE(4)))");
+}

@@ -9,9 +9,9 @@ enum class ExpressionType {
     IsNull, 
     Factorial,
     // Prefix
-    Minus,
+    Negate,
     Not,
-    Plus,
+    Assert,
     // Field
     Field,
     // Literals 

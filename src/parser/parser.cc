@@ -6,6 +6,7 @@
 
 namespace {
     // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/operator-precedence-transact-sql?view=sql-server-ver16
+    // May need to change since tokens +, - are used for both infix and prefix
     int GetPrecedence(TokenType t) {
         if (t == TokenType::Exclamation || t == TokenType::Is) {
             return 8;
@@ -55,7 +56,7 @@ namespace {
             case TokenType::Plus:
                 return new InfixOperation{ExpressionType::Add, lhs, rhs};
             case TokenType::Minus:
-                return new InfixOperation{ExpressionType::Minus, lhs, rhs};
+                return new InfixOperation{ExpressionType::Subtract, lhs, rhs};
             case TokenType::Asterisk:
                 return new InfixOperation{ExpressionType::Multiply, lhs, rhs};
             case TokenType::Slash:
@@ -64,6 +65,19 @@ namespace {
                 return new InfixOperation{ExpressionType::Modulo, lhs, rhs};
             case TokenType::Caret:
                 return new InfixOperation{ExpressionType::Exponentiate, lhs, rhs};
+            default:
+                return nullptr; // Error?
+        }
+    }
+
+    Expression * GetOperatorPrefix(TokenType t, Expression * e) {
+        switch (t) {
+            case TokenType::Plus:
+                return new PrefixOperation{ExpressionType::Assert, e};
+            case TokenType::Minus:
+                return new PrefixOperation{ExpressionType::Negate, e};
+            case TokenType::Not:
+                return new PrefixOperation{ExpressionType::Not, e};
             default:
                 return nullptr; // Error?
         }
@@ -78,12 +92,16 @@ namespace {
         }
     }
 
+    bool IsPrefixOperatorKeyword(Token t) {
+        return t.type == TokenType::Plus || t.type == TokenType::Minus || t.type == TokenType::Not;
+    }
+
     bool IsPostfixOperatorKeyword(Token t) {
         return t.type == TokenType::Is || t.type == TokenType::Exclamation;
     }
 
     bool IsInfixOperatorKeyword(Token t) { 
-        return GetPrecedence(t.type) > 0 && !IsPostfixOperatorKeyword(t); 
+        return GetPrecedence(t.type) > 0 && !IsPostfixOperatorKeyword(t) && t.type != TokenType::Not; 
     };
 }
 
@@ -212,13 +230,36 @@ Result<Column, Error> Parser::ParseColumn() {
 // Precedence Climbing Algorithm
 // https://eli.thegreenplace.net/2012/08/02/parsing-expressions-by-precedence-climbing
 Result<Expression*, Error> Parser::ParseExpression(int minimum_precedence) {
-    Result<Expression*, Error> result_w_error = ParseExpressionAtom();
+    // Prefix
+    std::optional<Token> prefix = NextIf(IsPrefixOperatorKeyword);
 
-    if (result_w_error.isErr()) {
-        return Err(result_w_error.unwrapErr());
+    Expression* result = nullptr;
+
+    if (prefix.has_value()) {
+        Result<Expression*, Error> e = ParseExpression(9);
+
+        if (e.isErr()) {
+            return Err(e.unwrapErr());
+        }
+
+        if (prefix.value().type == TokenType::Plus) {
+            result = new PrefixOperation{ExpressionType::Assert, e.unwrap()};
+        } else if (prefix.value().type == TokenType::Minus) {
+            result = new PrefixOperation{ExpressionType::Negate, e.unwrap()};
+        } else if (prefix.value().type == TokenType::Not) {
+            result = new PrefixOperation{ExpressionType::Not, e.unwrap()};
+        } else {
+            return Err(Error{ErrorType::Parse, "Unknown prefix error."});
+        }
+    } else {
+        Result<Expression*, Error> result_w_error = ParseExpressionAtom();
+
+        if (result_w_error.isErr()) {
+            return Err(result_w_error.unwrapErr());
+        }
+
+        result = result_w_error.unwrap();
     }
-
-    Expression * result = result_w_error.unwrap();
     
     // Postfix
     while (lexer->Peek().isOk() && IsPostfixOperatorKeyword(lexer->Peek().unwrap()) && GetPrecedence(lexer->Peek().unwrap().type) >= minimum_precedence) {

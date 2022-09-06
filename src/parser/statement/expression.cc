@@ -41,13 +41,21 @@ std::string NullLiteral::Display() {
 
 PrefixOperation::PrefixOperation(ExpressionType t, Expression * e) : Expression{t}, e{e} {}
 std::string PrefixOperation::Display() {
-    return "(PREFIX " + e->Display() + ")"; 
+    if (type == ExpressionType::Assert) {
+        return "ASSERT(" + e->Display() + ")"; 
+    } else if (type == ExpressionType::Negate) {
+        return "NEGATE(" + e->Display() + ")"; 
+    } else if (type == ExpressionType::Not) {
+        return "NOT(" + e->Display() + ")"; 
+    } else {
+        return "ERROR(" + e->Display() + ")";
+    }
 }
 
 PostfixOperation::PostfixOperation(ExpressionType t, Expression * e) : Expression{t}, e{e} {}
 std::string PostfixOperation::Display() {
     if (type == ExpressionType::Factorial) {
-        return "(" + e->Display() + "!)"; 
+        return "(" + e->Display() + ")!"; 
     } else {
         return "(" + e->Display() + "ERROR)";
     }
