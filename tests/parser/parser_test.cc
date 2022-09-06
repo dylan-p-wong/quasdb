@@ -197,3 +197,54 @@ TEST(ParserTest, ParserExpression11) {
   EXPECT_NE(i, nullptr);
   EXPECT_EQ(s.unwrap()->Display(), "((2 * (3 + 5)) * 7)");
 }
+
+TEST(ParserTest, ParserExpression12) {
+  Parser p{"test.fielder AND 'test' = FALSE"};
+  auto s = p.ParseExpression(0);
+  EXPECT_EQ(s.isOk(), true);
+  InfixOperation * i = dynamic_cast<InfixOperation*>(s.unwrap());
+  EXPECT_NE(i, nullptr);
+  EXPECT_EQ(s.unwrap()->Display(), "(test.fielder AND ('test' = FALSE))");
+}
+
+// Postfix
+TEST(ParserTest, ParserExpression13) {
+  Parser p{"test.fielder IS NOT NULL"};
+  auto s = p.ParseExpression(0);
+  EXPECT_EQ(s.isOk(), true);
+  EXPECT_EQ(s.unwrap()->Display(), "(test.fielder IS NOT NULL)");
+}
+
+TEST(ParserTest, ParserExpression14) {
+  Parser p{"test.fielder IS NULL"};
+  auto s = p.ParseExpression(0);
+  EXPECT_EQ(s.isOk(), true);
+  EXPECT_EQ(s.unwrap()->Display(), "(test.fielder IS NULL)");
+}
+
+TEST(ParserTest, ParserExpression15) {
+  Parser p{"test.fielder!! = NULL"};
+  auto s = p.ParseExpression(0);
+  EXPECT_EQ(s.isOk(), true);
+  EXPECT_EQ(s.unwrap()->Display(), "(((test.fielder!)!) = NULL)");
+}
+
+TEST(ParserTest, ParserExpression16) {
+  Parser p{"(test.fielder) IS NULL AND 4!"};
+  auto s = p.ParseExpression(0);
+  EXPECT_EQ(s.isOk(), true);
+  EXPECT_EQ(s.unwrap()->Display(), "((test.fielder IS NULL) AND (4!))");
+}
+
+TEST(ParserTest, ParserExpression17) {
+  Parser p{"(test.fielder) IS FALSE NULL AND 4!"};
+  auto s = p.ParseExpression(0);
+  EXPECT_EQ(s.isOk(), false);
+}
+
+TEST(ParserTest, ParserExpression18) {
+  Parser p{"(test.fielder) IS NOT FALSE"};
+  auto s = p.ParseExpression(0);
+  EXPECT_EQ(s.isOk(), false);
+}
+

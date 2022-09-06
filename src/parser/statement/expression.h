@@ -107,6 +107,14 @@ public:
     std::string Display() override;
 };
 
+class IsNullOperation : public Expression {
+public:
+    bool nullable;
+    Expression * e;
+    IsNullOperation(bool nullable, Expression * e);
+    std::string Display() override;
+};
+
 class InfixOperation : public Expression {
 public:
     Expression * left;

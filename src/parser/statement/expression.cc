@@ -12,7 +12,7 @@ std::string Field::Display() {
 StringLiteral::StringLiteral(std::string value) : Expression{ExpressionType::StringLiteral}, value{value} {}
 StringLiteral::~StringLiteral() {}
 std::string StringLiteral::Display() {
-    return value;
+    return "'" + value + "'";
 }
 
 FloatLiteral::FloatLiteral(float value) : Expression{ExpressionType::FloatLiteral}, value{value} {}
@@ -46,13 +46,17 @@ std::string PrefixOperation::Display() {
 
 PostfixOperation::PostfixOperation(ExpressionType t, Expression * e) : Expression{t}, e{e} {}
 std::string PostfixOperation::Display() {
-    if (type == ExpressionType::IsNull) {
-        return "(" + e->Display() + " IS NULL)"; 
-    } else if (type == ExpressionType::Factorial) {
+    if (type == ExpressionType::Factorial) {
         return "(" + e->Display() + "!)"; 
+    } else {
+        return "(" + e->Display() + "ERROR)";
     }
 }
 
+IsNullOperation::IsNullOperation(bool nullable, Expression * e) : Expression{ExpressionType::IsNull}, nullable{nullable}, e{e} {}
+std::string IsNullOperation::Display() {
+    return "(" + e->Display() + " IS " + (nullable ? "" : "NOT ") + "NULL)";
+}
 
 InfixOperation::InfixOperation(ExpressionType t, Expression * l, Expression * r) : Expression{t}, left{l}, right{r} {}
 std::string InfixOperation::Display() {

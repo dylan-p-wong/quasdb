@@ -6,8 +6,10 @@
 
 namespace {
     // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/operator-precedence-transact-sql?view=sql-server-ver16
-    int GetPrecedenceInfix(TokenType t) {
-        if (t == TokenType::Caret) {
+    int GetPrecedence(TokenType t) {
+        if (t == TokenType::Exclamation || t == TokenType::Is) {
+            return 8;
+        } else if (t == TokenType::Caret) {
             return 7;
         } else if (t == TokenType::Asterisk || t == TokenType::Slash || t == TokenType::Percent) {
             return 6;
@@ -28,7 +30,7 @@ namespace {
 
     enum class AssociativityType { Left, Right };
 
-    AssociativityType GetAssociativityInfix(TokenType t) {
+    AssociativityType GetAssociativity(TokenType t) {
         if (t == TokenType::Caret) {
             return AssociativityType::Right;
         }
@@ -67,8 +69,21 @@ namespace {
         }
     }
 
-    bool IsInfixOperatorKeyword (Token t) { 
-        return GetPrecedenceInfix(t.type) > 0; 
+    Expression * GetOperatorPostfix(TokenType t, Expression * e) {
+        switch (t) {
+            case TokenType::Exclamation:
+                return new PostfixOperation{ExpressionType::Factorial, e};
+            default:
+                return nullptr; // Error?
+        }
+    }
+
+    bool IsPostfixOperatorKeyword(Token t) {
+        return t.type == TokenType::Is || t.type == TokenType::Exclamation;
+    }
+
+    bool IsInfixOperatorKeyword(Token t) { 
+        return GetPrecedence(t.type) > 0 && !IsPostfixOperatorKeyword(t); 
     };
 }
 
@@ -205,12 +220,40 @@ Result<Expression*, Error> Parser::ParseExpression(int minimum_precedence) {
 
     Expression * result = result_w_error.unwrap();
     
-    while (lexer->Peek().isOk() && IsInfixOperatorKeyword(lexer->Peek().unwrap()) && GetPrecedenceInfix(lexer->Peek().unwrap().type) >= minimum_precedence) {
+    // Postfix
+    while (lexer->Peek().isOk() && IsPostfixOperatorKeyword(lexer->Peek().unwrap()) && GetPrecedence(lexer->Peek().unwrap().type) >= minimum_precedence) {
+        std::optional<Token> t = NextIf(IsPostfixOperatorKeyword);
+
+        if (t.value().type == TokenType::Is) {
+            bool nullable = true;
+
+            if (NextExpect(TokenType::Not).isOk()) {
+                nullable = false;
+            }
+
+            if (NextExpect(TokenType::Null).isErr()) {
+                return Err(Error{ErrorType::Parse, "Expected NULL got another."});
+            }
+
+            result = new IsNullOperation{nullable, result};
+        } else if (TokenType::Exclamation) {
+            result = GetOperatorPostfix(t.value().type, result);
+        } else {
+            return Err(Error{ErrorType::Parse, "Unknown postfix error."});
+        }
+        
+        if (result == nullptr) {
+            return Err(Error{ErrorType::Parse, "Error getting postfix operator."});
+        }
+    }
+
+    // Infix
+    while (lexer->Peek().isOk() && IsInfixOperatorKeyword(lexer->Peek().unwrap()) && GetPrecedence(lexer->Peek().unwrap().type) >= minimum_precedence) {
         std::optional<Token> t = NextIf(IsInfixOperatorKeyword);
 
-        int next_minimum_precedence = GetPrecedenceInfix(t.value().type);
+        int next_minimum_precedence = GetPrecedence(t.value().type);
 
-        if (GetAssociativityInfix(t.value().type) == AssociativityType::Left) {
+        if (GetAssociativity(t.value().type) == AssociativityType::Left) {
             ++next_minimum_precedence;
         }
 
