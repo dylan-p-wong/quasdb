@@ -6,6 +6,7 @@
 #include "parser/statement/drop_table.h"
 #include "parser/statement/select.h"
 #include "parser/statement/insert.h"
+#include "parser/statement/delete.h"
 
 
 TEST(ParserTest, ParserInvalidStatement) {
@@ -379,4 +380,24 @@ TEST(ParserTest, ParserInsert4) {
   EXPECT_EQ(i->values.at(0).at(1)->Display(), "yes");
   EXPECT_EQ(i->values.at(1).at(0)->Display(), "34");
   EXPECT_EQ(i->values.at(1).at(1)->Display(), "78");
+}
+
+TEST(ParserTest, ParserDelete1) {
+  Parser p{"DELETE FROM test where true"};
+  auto s = p.ParseStatement();
+  EXPECT_EQ(s.isOk(), true);
+  DeleteStatement * i = dynamic_cast<DeleteStatement*>(s.unwrap());
+  EXPECT_NE(i, nullptr);
+  EXPECT_EQ(i->table, "test");
+  EXPECT_EQ(i->where->Display(), "TRUE");
+}
+
+TEST(ParserTest, ParserDelete2) {
+  Parser p{"DELETE FROM test where true and false"};
+  auto s = p.ParseStatement();
+  EXPECT_EQ(s.isOk(), true);
+  DeleteStatement * i = dynamic_cast<DeleteStatement*>(s.unwrap());
+  EXPECT_NE(i, nullptr);
+  EXPECT_EQ(i->table, "test");
+  EXPECT_EQ(i->where->Display(), "(TRUE AND FALSE)");
 }

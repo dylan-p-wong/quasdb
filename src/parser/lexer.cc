@@ -64,6 +64,7 @@ TokenType ValueToTokenType(std::string v) {
     if (v == "TEXT") return TokenType::Text;
     if (v == "TIME") return TokenType::Time;
     if (v == "TRANSACTION") return TokenType::Transaction;
+    if (v == "TRUE") return TokenType::True;
     if (v == "UNIQUE") return TokenType::Unique;
     if (v == "UPDATE") return TokenType::Update;
     if (v == "VALUES") return TokenType::Values;

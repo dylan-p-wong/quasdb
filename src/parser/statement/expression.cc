@@ -30,7 +30,7 @@ std::string IntegerLiteral::Display() {
 BooleanLiteral::BooleanLiteral(bool value) : Expression{ExpressionType::BooleanLiteral}, value{value} {}
 BooleanLiteral::~BooleanLiteral() {}
 std::string BooleanLiteral::Display() {
-    return value ? "TRUE" : "FALSE";
+    return value == true ? "TRUE" : "FALSE";
 }
 
 NullLiteral::NullLiteral() : Expression{ExpressionType::NullLiteral} {}

@@ -4,6 +4,8 @@
 #include "./statement/create_table.h"
 #include "./statement/drop_table.h"
 #include "./statement/insert.h"
+#include "./statement/select.h"
+#include "./statement/delete.h"
 
 namespace {
     // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/operator-precedence-transact-sql?view=sql-server-ver16
@@ -374,7 +376,7 @@ Result<Expression*, Error> Parser::ParseExpressionAtom() {
         }
         case TokenType::True:
         {
-            Expression * res = new BooleanLiteral{false};
+            Expression * res = new BooleanLiteral{true};
             return Ok(res);
         }
         case TokenType::Infinity:
@@ -578,7 +580,36 @@ Result<Statement*, Error> Parser::ParseInsert() {
 }
 
 Result<Statement*, Error> Parser::ParseDelete() {
-    return Err(Error{ErrorType::Parse, ""});
+    Result<Token, Error> deleteToken = NextExpect(TokenType::Delete);
+
+    if (deleteToken.isErr()) {
+        return Err(deleteToken.unwrapErr());
+    }
+    
+    Result<Token, Error> fromToken = NextExpect(TokenType::From);
+
+    if (fromToken.isErr()) {
+        return Err(fromToken.unwrapErr());
+    }
+
+    Result<Token, Error> tableToken = NextExpect(TokenType::IdentifierValue);
+    if (tableToken.isErr()) {
+        return Err(tableToken.unwrapErr());
+    }
+
+    DeleteStatement * s = new DeleteStatement{};
+
+    s->table = tableToken.unwrap().value;
+
+    Result<Expression*, Error> e = ParseWhereClause();
+
+    if (e.isErr()) {
+        return Err(e.unwrapErr());
+    }
+
+    s->where = e.unwrap();
+
+    return Ok(dynamic_cast<Statement*>(s));
 }
 
 Result<Statement*, Error> Parser::ParseSelect() {
