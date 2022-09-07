@@ -262,3 +262,63 @@ TEST(ParserTest, ParserExpression20) {
   EXPECT_EQ(s.isOk(), true);
   EXPECT_EQ(s.unwrap()->Display(), "((NOT(4))! + NEGATE(NEGATE(4)))");
 }
+
+TEST(ParserTest, ParserSelect1) {
+  Parser p{"SELECT * FROM test"};
+  auto s = p.ParseStatement();
+  EXPECT_EQ(s.isOk(), true);
+}
+
+TEST(ParserTest, ParserSelect2) {
+  Parser p{"SELECT id FROM hey where 4 =4"};
+  auto s = p.ParseStatement();
+  EXPECT_EQ(s.isOk(), true);
+}
+
+TEST(ParserTest, ParserSelect3) {
+  Parser p{"SELECT id, what.id FROM hey, what where 4 =4"};
+  auto s = p.ParseStatement();
+  EXPECT_EQ(s.isOk(), true);
+}
+
+TEST(ParserTest, ParserSelect4) {
+  Parser p{"SELECT id, what.id FROM hey, what group by what.id"};
+  auto s = p.ParseStatement();
+  EXPECT_EQ(s.isOk(), true);
+}
+
+TEST(ParserTest, ParserSelect5) {
+  Parser p{"SELECT id, what.id FROM hey, what order by what.id, name"};
+  auto s = p.ParseStatement();
+  EXPECT_EQ(s.isOk(), true);
+}
+
+TEST(ParserTest, ParserSelect6) {
+  Parser p{"SELECT id, what.id FROM hey, what group by what.id, name"};
+  auto s = p.ParseStatement();
+  EXPECT_EQ(s.isOk(), true);
+}
+
+TEST(ParserTest, ParserSelect7) {
+  Parser p{"SELECT id, what.id FROM hey, what order by what.id, name ASC, birth DESC"};
+  auto s = p.ParseStatement();
+  EXPECT_EQ(s.isOk(), true);
+}
+
+TEST(ParserTest, ParserSelect8) {
+  Parser p{"SELECT id, what.id FROM hey, what group by what.id having birth='30-30-30'"};
+  auto s = p.ParseStatement();
+  EXPECT_EQ(s.isOk(), true);
+}
+
+TEST(ParserTest, ParserSelect9) {
+  Parser p{"SELECT id, what.id FROM hey, what limit 98"};
+  auto s = p.ParseStatement();
+  EXPECT_EQ(s.isOk(), true);
+}
+
+TEST(ParserTest, ParserSelect10) {
+  Parser p{"SELECT id, what.id FROM hey, what offset 98"};
+  auto s = p.ParseStatement();
+  EXPECT_EQ(s.isOk(), true);
+}

@@ -6,6 +6,7 @@
 #include "../common/result.h"
 #include "../common/error.h"
 #include "./statement/create_table.h"
+#include "./statement/select.h"
 
 #include "lexer.h"
 
@@ -27,4 +28,13 @@ public:
     Result<Statement*, Error> ParseDelete();
     Result<Statement*, Error> ParseSelect();
     Result<Statement*, Error> ParseUpdate();
+    Result<std::vector<SelectItem*>, Error> ParseSelectClause();
+    Result<std::vector<FromItem*>, Error> ParseFromClause();
+    Result<FromItem*, Error> ParseFromItem();
+    Result<Expression*, Error> ParseWhereClause();
+    Result<std::vector<Expression*>, Error> ParseGroupByClause();
+    Result<Expression*, Error> ParseHavingClause();
+    Result<std::vector<OrderItem*>, Error> ParseOrderByClause();
+    Result<Expression*, Error> ParseLimitClause();
+    Result<Expression*, Error> ParseOffsetClause();
 };

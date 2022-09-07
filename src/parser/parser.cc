@@ -499,9 +499,277 @@ Result<Statement*, Error> Parser::ParseDelete() {
 }
 
 Result<Statement*, Error> Parser::ParseSelect() {
-    return Err(Error{ErrorType::Parse, ""});
+
+    Result<std::vector<SelectItem*>, Error> select = ParseSelectClause();
+
+    if (select.isErr()) {
+        return Err(select.unwrapErr());
+    }
+
+    Result<std::vector<FromItem*>, Error> from = ParseFromClause();
+
+    if (from.isErr()) {
+        return Err(from.unwrapErr());
+    }
+
+    SelectStatement * s = new SelectStatement{};
+
+    s->select = select.unwrap();
+    s->from = from.unwrap();
+
+    if (lexer->Peek().isOk() && lexer->Peek().unwrap().type == TokenType::Where) {
+        Result<Expression*, Error> where = ParseWhereClause();
+
+        if (where.isErr()) {
+            return Err(where.unwrapErr());
+        }
+
+        s->where = where.unwrap();
+    }
+
+    if (lexer->Peek().isOk() && lexer->Peek().unwrap().type == TokenType::Group) {
+        Result<std::vector<Expression*>, Error> group_by = ParseGroupByClause();
+
+        if (group_by.isErr()) {
+            return Err(group_by.unwrapErr());
+        }
+
+        s->group_by = group_by.unwrap();
+    }
+
+    if (lexer->Peek().isOk() && lexer->Peek().unwrap().type == TokenType::Having) {
+        Result<Expression*, Error> having = ParseHavingClause();
+
+        if (having.isErr()) {
+            return Err(having.unwrapErr());
+        }
+
+        s->having = having.unwrap();
+    }
+
+    if (lexer->Peek().isOk() && lexer->Peek().unwrap().type == TokenType::Order) {
+        Result<std::vector<OrderItem*>, Error> order_by = ParseOrderByClause();
+
+        if (order_by.isErr()) {
+            return Err(order_by.unwrapErr());
+        }
+
+        s->order_by = order_by.unwrap();
+    }
+
+    if (lexer->Peek().isOk() && lexer->Peek().unwrap().type == TokenType::Limit) {
+        Result<Expression*, Error> limit = ParseLimitClause();
+
+        if (limit.isErr()) {
+            return Err(limit.unwrapErr());
+        }
+
+        s->limit = limit.unwrap();
+    }
+
+    if (lexer->Peek().isOk() && lexer->Peek().unwrap().type == TokenType::Offset) {
+        Result<Expression*, Error> offset = ParseOffsetClause();
+
+        if (offset.isErr()) {
+            return Err(offset.unwrapErr());
+        }
+
+        s->offset = offset.unwrap();
+    }
+
+    return Ok(dynamic_cast<Statement*>(s));
 }
 
 Result<Statement*, Error> Parser::ParseUpdate() {
     return Err(Error{ErrorType::Parse, ""});
+}
+
+Result<std::vector<SelectItem*>, Error> Parser::ParseSelectClause() {
+    Result<Token, Error> selectToken = NextExpect(TokenType::Select);
+
+    if (selectToken.isErr()) {
+        return Err(selectToken.unwrapErr());
+    }
+
+    std::vector<SelectItem*> select;
+
+    if (NextExpect(TokenType::Asterisk).isOk()) {
+        return Ok(select);
+    }
+
+    while (true) {
+        Result<Expression*, Error> e = ParseExpression(0);
+
+        if (e.isErr()) {
+            return Err(e.unwrapErr());
+        }
+
+        std::string alias = "";
+
+        bool seen_as = NextExpect(TokenType::As).isOk();
+
+        Result<Token, Error> i = NextExpect(TokenType::IdentifierValue);
+
+        if (seen_as && i.isErr()) {
+            return Err(Error{ErrorType::Parse, "Expected identifier after AS but found another."});
+        } else if (i.isOk()) {
+            alias = i.unwrap().value;
+        }
+
+        select.push_back(new SelectItem{e.unwrap(), alias});
+
+        if (NextExpect(TokenType::Comma).isErr()) {
+            break;
+        }
+    }
+
+    return Ok(select);
+}
+
+Result<std::vector<FromItem*>, Error> Parser::ParseFromClause() {
+    Result<Token, Error> fromToken = NextExpect(TokenType::From);
+
+    if (fromToken.isErr()) {
+        return Err(fromToken.unwrapErr());
+    }
+
+    std::vector<FromItem*> from;
+
+    while (true) {
+        Result<FromItem*, Error> i = ParseFromItem();
+        if (i.isErr()) {
+            return Err(i.unwrapErr());
+        }
+        FromItem * item = i.unwrap();
+
+        // TODO(Dylan) Add joins
+
+        from.push_back(item);
+
+        if (NextExpect(TokenType::Comma).isErr()) {
+            break;
+        }
+    }
+
+    return Ok(from);
+}
+
+Result<FromItem*, Error> Parser::ParseFromItem() {
+    Result<Token, Error> identifier = NextExpect(TokenType::IdentifierValue);
+    if (identifier.isErr()) {
+        return Err(identifier.unwrapErr());
+    }
+
+    std::string alias;
+
+    bool seen_as = NextExpect(TokenType::As).isOk();
+
+    Result<Token, Error> i = NextExpect(TokenType::IdentifierValue);
+
+    if (seen_as && i.isErr()) {
+        return Err(Error{ErrorType::Parse, "Expected identifier after AS but found another."});
+    } else if (i.isOk()) {
+        alias = i.unwrap().value;
+    }
+
+    FromItem * res = new TableFromItem{identifier.unwrap().value, alias};
+    return Ok(res);
+}
+
+Result<Expression*, Error> Parser::ParseWhereClause() {
+    Result<Token, Error> whereToken = NextExpect(TokenType::Where);
+    if (whereToken.isErr()) {
+        return Err(whereToken.unwrapErr());
+    }
+    return ParseExpression(0);
+}
+
+Result<std::vector<Expression*>, Error> Parser::ParseGroupByClause() {
+    std::vector<Expression*> group_by;
+
+    Result<Token, Error> groupToken = NextExpect(TokenType::Group);
+    if (groupToken.isErr()) {
+        return Err(groupToken.unwrapErr());
+    }
+    Result<Token, Error> byToken = NextExpect(TokenType::By);
+    if (byToken.isErr()) {
+        return Err(byToken.unwrapErr());
+    }
+
+    while (true) {
+        Result<Expression*, Error> e = ParseExpression(0);
+    
+        if (e.isErr()) {
+            return Err(e.unwrapErr());
+        }
+
+        group_by.push_back(e.unwrap());
+
+        if (NextExpect(TokenType::Comma).isErr()) {
+            break;
+        }
+    }
+
+    return Ok(group_by);
+}
+
+Result<Expression*, Error> Parser::ParseHavingClause() {
+    Result<Token, Error> havingToken = NextExpect(TokenType::Having);
+    if (havingToken.isErr()) {
+        return Err(havingToken.unwrapErr());
+    }
+    return ParseExpression(0);
+}
+
+Result<std::vector<OrderItem*>, Error> Parser::ParseOrderByClause() {
+    Result<Token, Error> orderToken = NextExpect(TokenType::Order);
+    if (orderToken.isErr()) {
+        return Err(orderToken.unwrapErr());
+    }
+    Result<Token, Error> byToken = NextExpect(TokenType::By);
+    if (byToken.isErr()) {
+        return Err(byToken.unwrapErr());
+    }
+
+    std::vector<OrderItem*> order_by;
+
+    while (true) {
+        Result<Expression*, Error> e = ParseExpression(0);
+    
+        if (e.isErr()) {
+            return Err(e.unwrapErr());
+        }
+
+        OrderType t = OrderType::ASC;
+
+        if (NextExpect(TokenType::Asc).isOk()) {
+            t = OrderType::ASC;
+        } else if (NextExpect(TokenType::Desc).isOk()) {
+            t = OrderType::DESC;
+        }
+
+        order_by.push_back(new OrderItem{t, e.unwrap()});
+
+        if (NextExpect(TokenType::Comma).isErr()) {
+            break;
+        }
+    }
+
+    return Ok(order_by);
+}
+
+Result<Expression*, Error> Parser::ParseLimitClause() {
+    Result<Token, Error> limitToken = NextExpect(TokenType::Limit);
+    if (limitToken.isErr()) {
+        return Err(limitToken.unwrapErr());
+    }
+    return ParseExpression(0);
+}
+
+Result<Expression*, Error> Parser::ParseOffsetClause() {
+    Result<Token, Error> offsetToken = NextExpect(TokenType::Offset);
+    if (offsetToken.isErr()) {
+        return Err(offsetToken.unwrapErr());
+    }
+    return ParseExpression(0);
 }
