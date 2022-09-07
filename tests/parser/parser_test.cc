@@ -4,6 +4,9 @@
 #include "parser/statement/statement.h"
 #include "parser/statement/create_table.h"
 #include "parser/statement/drop_table.h"
+#include "parser/statement/select.h"
+#include "parser/statement/insert.h"
+
 
 TEST(ParserTest, ParserInvalidStatement) {
   Parser p{"DERP SELECT * FROM movies"};
@@ -321,4 +324,59 @@ TEST(ParserTest, ParserSelect10) {
   Parser p{"SELECT id, what.id FROM hey, what offset 98"};
   auto s = p.ParseStatement();
   EXPECT_EQ(s.isOk(), true);
+}
+
+TEST(ParserTest, ParserInsert1) {
+  Parser p{"INSERT INTO test VALUES (test, yes)"};
+  auto s = p.ParseStatement();
+  EXPECT_EQ(s.isOk(), true);
+  InsertStatement * i = dynamic_cast<InsertStatement*>(s.unwrap());
+  EXPECT_NE(i, nullptr);
+  EXPECT_EQ(i->table, "test");
+  EXPECT_EQ(i->values.size(), 1);
+  EXPECT_EQ(i->values.at(0).at(0)->Display(), "test");
+  EXPECT_EQ(i->values.at(0).at(1)->Display(), "yes");
+}
+
+TEST(ParserTest, ParserInsert2) {
+  Parser p{"INSERT INTO test VALUES (test, yes), (34, 78)"};
+  auto s = p.ParseStatement();
+  EXPECT_EQ(s.isOk(), true);
+  InsertStatement * i = dynamic_cast<InsertStatement*>(s.unwrap());
+  EXPECT_NE(i, nullptr);
+  EXPECT_EQ(i->table, "test");
+  EXPECT_EQ(i->values.size(), 2);
+  EXPECT_EQ(i->values.at(0).at(0)->Display(), "test");
+  EXPECT_EQ(i->values.at(0).at(1)->Display(), "yes");
+  EXPECT_EQ(i->values.at(1).at(0)->Display(), "34");
+  EXPECT_EQ(i->values.at(1).at(1)->Display(), "78");
+}
+
+TEST(ParserTest, ParserInsert3) {
+  Parser p{"INSERT INTO test (col1, col2) VALUES (test, yes)"};
+  auto s = p.ParseStatement();
+  EXPECT_EQ(s.isOk(), true);
+  InsertStatement * i = dynamic_cast<InsertStatement*>(s.unwrap());
+  EXPECT_NE(i, nullptr);
+  EXPECT_EQ(i->table, "test");
+  EXPECT_EQ(i->columns.at(0), "col1");
+  EXPECT_EQ(i->columns.at(1), "col2");
+  EXPECT_EQ(i->values.size(), 1);
+  EXPECT_EQ(i->values.at(0).at(0)->Display(), "test");
+  EXPECT_EQ(i->values.at(0).at(1)->Display(), "yes");
+}
+
+TEST(ParserTest, ParserInsert4) {
+  Parser p{"INSERT INTO  test  (col1) VALUES (test, yes), (34, 78)"};
+  auto s = p.ParseStatement();
+  EXPECT_EQ(s.isOk(), true);
+  InsertStatement * i = dynamic_cast<InsertStatement*>(s.unwrap());
+  EXPECT_NE(i, nullptr);
+  EXPECT_EQ(i->table, "test");
+  EXPECT_EQ(i->columns.at(0), "col1");
+  EXPECT_EQ(i->values.size(), 2);
+  EXPECT_EQ(i->values.at(0).at(0)->Display(), "test");
+  EXPECT_EQ(i->values.at(0).at(1)->Display(), "yes");
+  EXPECT_EQ(i->values.at(1).at(0)->Display(), "34");
+  EXPECT_EQ(i->values.at(1).at(1)->Display(), "78");
 }

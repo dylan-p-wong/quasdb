@@ -3,6 +3,7 @@
 #include "parser.h"
 #include "./statement/create_table.h"
 #include "./statement/drop_table.h"
+#include "./statement/insert.h"
 
 namespace {
     // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/operator-precedence-transact-sql?view=sql-server-ver16
@@ -491,7 +492,89 @@ Result<Statement*, Error> Parser::ParseDropTable() {
 }
 
 Result<Statement*, Error> Parser::ParseInsert() {
-    return Err(Error{ErrorType::Parse, ""});
+    Result<Token, Error> insertToken = NextExpect(TokenType::Insert);
+    if (insertToken.isErr()) {
+        return Err(insertToken.unwrapErr());
+    }
+
+    Result<Token, Error> intoToken = NextExpect(TokenType::Into);
+    if (intoToken.isErr()) {
+        return Err(intoToken.unwrapErr());
+    }
+
+    InsertStatement * s = new InsertStatement{};
+
+    Result<Token, Error> tableToken = NextExpect(TokenType::IdentifierValue);
+    if (tableToken.isErr()) {
+        return Err(tableToken.unwrapErr());
+    }
+
+    s->table = tableToken.unwrap().value;
+
+    std::vector<std::string> columns;
+
+    if (NextExpect(TokenType::OpenParen).isOk()) {
+        while (true) {
+            Result<Token, Error> columnToken = NextExpect(TokenType::IdentifierValue);
+            if (columnToken.isErr()) {
+                return Err(columnToken.unwrapErr());
+            }
+
+            columns.push_back(columnToken.unwrap().value);
+
+            if (NextExpect(TokenType::Comma).isErr()) {
+                break;
+            }
+        }
+        Result<Token, Error> closeParenToken = NextExpect(TokenType::CloseParen);
+        if (closeParenToken.isErr()) {
+            return Err(closeParenToken.unwrapErr());
+        }
+    }
+    
+    s->columns = columns;
+
+    Result<Token, Error> valuesToken = NextExpect(TokenType::Values);
+    if (valuesToken.isErr()) {
+        return Err(valuesToken.unwrapErr());
+    }
+
+    std::vector<std::vector<Expression*>> all_values;
+    while (true) {
+        Result<Token, Error> openParenToken = NextExpect(TokenType::OpenParen);
+        if (openParenToken.isErr()) {
+            return Err(openParenToken.unwrapErr());
+        }
+
+        std::vector<Expression*> values;
+        while (true) {
+            Result<Expression*, Error> e = ParseExpression(0);
+
+            if (e.isErr()) {
+                return Err(e.unwrapErr());
+            }
+
+            values.push_back(e.unwrap());
+
+            if (NextExpect(TokenType::Comma).isErr()) {
+                break;
+            }
+        }
+        Result<Token, Error> closeParenToken = NextExpect(TokenType::CloseParen);
+        if (closeParenToken.isErr()) {
+            return Err(closeParenToken.unwrapErr());
+        }
+
+        all_values.push_back(values);
+
+        if (NextExpect(TokenType::Comma).isErr()) {
+            break;
+        }
+    }
+
+    s->values = all_values;
+    
+    return Ok(dynamic_cast<Statement*>(s));
 }
 
 Result<Statement*, Error> Parser::ParseDelete() {
