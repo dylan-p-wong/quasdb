@@ -6,6 +6,8 @@
 #include "./statement/insert.h"
 #include "./statement/select.h"
 #include "./statement/delete.h"
+#include "./statement/update.h"
+
 
 namespace {
     // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/operator-precedence-transact-sql?view=sql-server-ver16
@@ -601,13 +603,15 @@ Result<Statement*, Error> Parser::ParseDelete() {
 
     s->table = tableToken.unwrap().value;
 
-    Result<Expression*, Error> e = ParseWhereClause();
+    if (lexer->Peek().isOk() && lexer->Peek().unwrap().type == TokenType::Where) {
+        Result<Expression*, Error> e = ParseWhereClause();
 
-    if (e.isErr()) {
-        return Err(e.unwrapErr());
+        if (e.isErr()) {
+            return Err(e.unwrapErr());
+        }
+
+        s->where = e.unwrap();
     }
-
-    s->where = e.unwrap();
 
     return Ok(dynamic_cast<Statement*>(s));
 }
@@ -695,7 +699,64 @@ Result<Statement*, Error> Parser::ParseSelect() {
 }
 
 Result<Statement*, Error> Parser::ParseUpdate() {
-    return Err(Error{ErrorType::Parse, ""});
+    Result<Token, Error> updateToken = NextExpect(TokenType::Update);
+
+    if (updateToken.isErr()) {
+        return Err(updateToken.unwrapErr());
+    }
+    
+    Result<Token, Error> tableToken = NextExpect(TokenType::IdentifierValue);
+    if (tableToken.isErr()) {
+        return Err(tableToken.unwrapErr());
+    }
+
+    UpdateStatement * s = new UpdateStatement{};
+
+    s->table = tableToken.unwrap().value;
+
+    Result<Token, Error> setToken = NextExpect(TokenType::Set);
+    if (setToken.isErr()) {
+        return Err(setToken.unwrapErr());
+    }
+
+    std::unordered_map<std::string, Expression*> set;
+
+    while (true) {
+        Result<Token, Error> columnToken = NextExpect(TokenType::IdentifierValue);
+        if (columnToken.isErr()) {
+            return Err(columnToken.unwrapErr());
+        }
+
+        Result<Token, Error> equalToken = NextExpect(TokenType::Equal);
+        if (equalToken.isErr()) {
+            return Err(equalToken.unwrapErr());
+        }
+
+        Result<Expression*, Error> e = ParseExpression(0);
+        if (e.isErr()) {
+            return Err(e.unwrapErr());
+        }
+
+        set[columnToken.unwrap().value] = e.unwrap();
+
+        if (NextExpect(TokenType::Comma).isErr()) {
+            break;
+        }
+    }
+
+    s->set = set;
+
+    if (lexer->Peek().isOk() && lexer->Peek().unwrap().type == TokenType::Where) {
+        Result<Expression*, Error> e = ParseWhereClause();
+
+        if (e.isErr()) {
+            return Err(e.unwrapErr());
+        }
+
+        s->where = e.unwrap();
+    }
+
+    return Ok(dynamic_cast<Statement*>(s));
 }
 
 Result<std::vector<SelectItem*>, Error> Parser::ParseSelectClause() {

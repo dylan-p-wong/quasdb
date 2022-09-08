@@ -7,7 +7,7 @@
 #include "parser/statement/select.h"
 #include "parser/statement/insert.h"
 #include "parser/statement/delete.h"
-
+#include "parser/statement/update.h"
 
 TEST(ParserTest, ParserInvalidStatement) {
   Parser p{"DERP SELECT * FROM movies"};
@@ -401,3 +401,35 @@ TEST(ParserTest, ParserDelete2) {
   EXPECT_EQ(i->table, "test");
   EXPECT_EQ(i->where->Display(), "(TRUE AND FALSE)");
 }
+
+TEST(ParserTest, ParserDelete3) {
+  Parser p{"DELETE FROM test"};
+  auto s = p.ParseStatement();
+  EXPECT_EQ(s.isOk(), true);
+  DeleteStatement * i = dynamic_cast<DeleteStatement*>(s.unwrap());
+  EXPECT_NE(i, nullptr);
+  EXPECT_EQ(i->table, "test");
+}
+
+TEST(ParserTest, ParserUpdate1) {
+  Parser p{"UPDATE test SET r=x, g=5 where true"};
+  auto s = p.ParseStatement();
+  EXPECT_EQ(s.isOk(), true);
+  UpdateStatement * i = dynamic_cast<UpdateStatement*>(s.unwrap());
+  EXPECT_NE(i, nullptr);
+  EXPECT_EQ(i->table, "test");
+  EXPECT_EQ(i->set["r"]->Display(), "x");
+  EXPECT_EQ(i->set["g"]->Display(), "5");
+  EXPECT_EQ(i->where->Display(), "TRUE");
+}
+
+TEST(ParserTest, ParserUpdate2) {
+  Parser p{"UPDATE test SET r=8"};
+  auto s = p.ParseStatement();
+  EXPECT_EQ(s.isOk(), true);
+  UpdateStatement * i = dynamic_cast<UpdateStatement*>(s.unwrap());
+  EXPECT_NE(i, nullptr);
+  EXPECT_EQ(i->table, "test");
+  EXPECT_EQ(i->set["r"]->Display(), "8");
+}
+
