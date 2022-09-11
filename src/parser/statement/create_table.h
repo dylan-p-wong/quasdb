@@ -7,7 +7,7 @@
 #include "expression.h"
 #include "statement.h"
 
-enum class DataType { Boolean, Integer, Float, Varchar };
+#include "../../common/shared.h"
 
 struct Column {
     std::string name;
@@ -17,7 +17,7 @@ struct Column {
     Expression * default_value;
     bool unique = false;
     bool index = false;
-    std::optional<std::pair<std::string, std::string>> references;
+    std::optional<std::pair<std::string, std::string>> references; // table.field
 };
 
 class CreateTable : public Statement {

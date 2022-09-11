@@ -1,5 +1,5 @@
-add_library(parser error.h result.h)
+add_library(common error.h result.h config.h shared.h shared.cc)
 
 set(ALL_OBJECT_FILES
-    ${ALL_OBJECT_FILES} $<TARGET_OBJECTS:parser>
+    ${ALL_OBJECT_FILES} $<TARGET_OBJECTS:common>
     PARENT_SCOPE)

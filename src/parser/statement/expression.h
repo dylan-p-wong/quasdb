@@ -3,6 +3,7 @@
 #include <string>
 
 #include "../lexer.h"
+#include "../../common/shared.h"
 
 enum class ExpressionType {
     // Postfix
@@ -43,6 +44,7 @@ public:
     virtual std::string Display() = 0;
     Expression(ExpressionType type);
     virtual ~Expression() = 0;
+    std::unique_ptr<AbstractData> EvaluateConstant() const;
 };
 
 class Field : public Expression {
