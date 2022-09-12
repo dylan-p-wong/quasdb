@@ -176,6 +176,8 @@ Result<Column, Error> Parser::ParseColumn() {
                 return Err(Error{ErrorType::Parse, "Expected token KEY but found another."});
             }
             c.primary_key = true;
+            c.nullable = false;
+            c.unique = true;
         } else if (t.value().type == TokenType::Not) {
             if (NextExpect(TokenType::Null).isErr()) {
                 return Err(Error{ErrorType::Parse, "Expected token NULL but found another."});

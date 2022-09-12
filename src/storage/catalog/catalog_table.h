@@ -11,9 +11,10 @@ class CatalogTable {
 public:
     std::string name;
     std::vector<CatalogColumn*> columns;
-    // Result<CatalogColumn*, Error> GetColumn(std::string name);
+    Result<CatalogColumn*, Error> GetColumn(const std::string & name);
+    std::vector<std::pair<std::string, std::string>> GetReferences();
     // Result<void, Error> GetColumnIndex(std::string name);
     // Result<void, Error> GetPrimaryKey(std::string name);
-    // bool ValidateTable();
+    bool ValidateTable();
     // bool ValidateRow();
 };
