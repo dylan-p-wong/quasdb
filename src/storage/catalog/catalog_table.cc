@@ -43,3 +43,20 @@ bool CatalogTable::ValidateTable() {
 
     return true;
 }
+
+bool CatalogTable::ValidateRow(const std::vector<std::unique_ptr<AbstractData>> & row) {
+
+    if (row.size() != columns.size()) {
+        return false;
+    }
+
+    for (int i = 0; i < row.size(); i++) {
+        CatalogColumn * column = columns.at(i);
+        
+        if (!column->ValidateValue(row.at(i).get())) {
+            return false;
+        }
+    }
+
+    return true;
+}

@@ -18,6 +18,6 @@ public:
     bool index;
     std::optional<std::pair<std::string, std::string>> references; // table.field
     bool ValidateColumn();
-    // bool ValidateValue();
+    bool ValidateValue(AbstractData * value);
     CatalogColumn(const Column & statement_column);
 };

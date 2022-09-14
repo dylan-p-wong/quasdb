@@ -16,5 +16,5 @@ public:
     // Result<void, Error> GetColumnIndex(std::string name);
     // Result<void, Error> GetPrimaryKey(std::string name);
     bool ValidateTable();
-    // bool ValidateRow();
+    bool ValidateRow(const std::vector<std::unique_ptr<AbstractData>> & row); // May need to change to normal pointer
 };

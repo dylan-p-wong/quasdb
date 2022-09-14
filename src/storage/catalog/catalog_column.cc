@@ -16,3 +16,7 @@ bool CatalogColumn::ValidateColumn() {
 
     return true;
 }
+
+bool CatalogColumn::ValidateValue(AbstractData * value) {
+    return true;
+}
