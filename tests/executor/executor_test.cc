@@ -5,11 +5,12 @@
 #include "parser/parser.h"
 #include "planner/plans/create_table_plan.h"
 #include "planner/plans/drop_table_plan.h"
-
+#include "storage/buffer/buffer_manager.h"
 #include "executor/executor.h"
 
 TEST(ExecutorTest, ExecutorCreateTableTest1) {
-  Catalog * catalog = new Catalog{};
+  BufferManager * buffer_manager = new BufferManager{};
+  Catalog * catalog = new Catalog{buffer_manager};
 
   Parser parser1{"CREATE table test (x integer)"};
   Planner planner{};
@@ -33,7 +34,8 @@ TEST(ExecutorTest, ExecutorCreateTableTest1) {
 }
 
 TEST(ExecutorTest, ExecutorCreateTableTest2) {
-  Catalog * catalog = new Catalog{};
+  BufferManager * buffer_manager = new BufferManager{};
+  Catalog * catalog = new Catalog{buffer_manager};
   Planner planner{};
   Executor e{catalog};
 
@@ -59,4 +61,49 @@ TEST(ExecutorTest, ExecutorCreateTableTest2) {
   EXPECT_EQ(res3.type, OutputType::CreateTable);
   EXPECT_EQ(res3.error, false);
   EXPECT_EQ(catalog->tables.size(), 2);
+}
+
+TEST(PlansTest, ExecutorInsertTest1) {
+  BufferManager * buffer_manager = new BufferManager{};
+  Catalog * catalog = new Catalog{buffer_manager};
+  Planner planner{};
+  Executor e{catalog};
+
+  Parser parser1{"CREATE table test (x integer, y integer)"};
+  std::unique_ptr<PlanNode> plan1 = planner.CreatePlan(parser1.ParseStatement().unwrap());
+  ExecutionOutput res1 = e.Execute(plan1.get());
+
+  EXPECT_EQ(res1.type, OutputType::CreateTable);
+  EXPECT_EQ(res1.error, false);
+  EXPECT_EQ(catalog->tables.size(), 1);
+  EXPECT_EQ(catalog->tables.at(0)->GetNumberOfColumns(), 2);
+
+  Parser parser2{"INSERT INTO test VALUES (1 * 8, 7^2)"};
+  std::unique_ptr<PlanNode> plan2 = planner.CreatePlan(parser2.ParseStatement().unwrap());
+  ExecutionOutput res2 = e.Execute(plan2.get());
+
+  EXPECT_EQ(buffer_manager->next_page_id, 2);
+  DirectoryPage * dp = reinterpret_cast<DirectoryPage*>(buffer_manager->GetPage(0));
+  EXPECT_EQ(dp->GetDataPagePageId(0), 1);
+  EXPECT_EQ(dp->GetDataPageFreeSpace(0), 4068);
+
+  TablePage * tp = reinterpret_cast<TablePage*>(buffer_manager->GetPage(1));
+  EXPECT_EQ(tp->GetTupleCount(), 1);
+  EXPECT_EQ(tp->GetFreeSpace(), 4068);
+  EXPECT_EQ(tp->GetTupleInfo(0).first, 4088);
+  EXPECT_EQ(tp->GetTupleInfo(0).second, 8);
+  EXPECT_EQ(*reinterpret_cast<int*>(tp->GetData() + 4088), 8);
+  EXPECT_EQ(*reinterpret_cast<int*>(tp->GetData() + 4088 + 4), 49);
+
+  auto tuple1 = tp->GetTuple(RID{1, 0}, catalog->tables.at(0)).unwrap();
+  auto data1 = tuple1->GetValueAtColumnIndex(0, catalog->tables.at(0));
+  EXPECT_EQ(data1->type, DataType::Integer);
+  Data<int> * int_data1 = dynamic_cast<Data<int>*>(data1.get());
+  EXPECT_EQ(int_data1->value, 8);
+
+  auto tuple2 = tp->GetTuple(RID{1, 0}, catalog->tables.at(0)).unwrap();
+  auto data2 = tuple2->GetValueAtColumnIndex(1, catalog->tables.at(0));
+  EXPECT_EQ(data2->type, DataType::Integer);
+  Data<int> * int_data2 = dynamic_cast<Data<int>*>(data2.get());
+  EXPECT_EQ(int_data2->value, 49);
 }

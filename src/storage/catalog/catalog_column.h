@@ -8,16 +8,29 @@
 #include "../../parser/statement/create_table.h"
 
 class CatalogColumn {
+    DataType datatype;
+    // offset in tuple
+    int column_offset;
 public:
     std::string name;
-    DataType datatype;
     bool primary_key;
     bool nullable;
     std::unique_ptr<AbstractData> default_value;
     bool unique;
     bool index;
     std::optional<std::pair<std::string, std::string>> references; // table.field
+    CatalogColumn(const Column & statement_column, int column_offset);
+
+    // validation
     bool ValidateColumn();
     bool ValidateValue(AbstractData * value);
-    CatalogColumn(const Column & statement_column);
+
+    int GetColumnOffset() {
+        return column_offset;
+    }
+    int GetColumnSize();
+
+    DataType GetColumnDataType() {
+        return datatype;
+    }
 };

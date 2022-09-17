@@ -2,7 +2,7 @@
 
 #include "catalog.h"
 
-Catalog::Catalog() {
+Catalog::Catalog(BufferManager * buffer_manager) : buffer_manager{buffer_manager} {
     // Init from storage
 }
 

@@ -1,6 +1,9 @@
 #include <unordered_set>
+#include <memory>
 
 #include "catalog_table.h"
+
+CatalogTable::CatalogTable() {}
 
 Result<CatalogColumn*, Error> CatalogTable::GetColumn(const std::string & name) {
     for (CatalogColumn * column : columns) {
@@ -59,4 +62,30 @@ bool CatalogTable::ValidateRow(const std::vector<std::unique_ptr<AbstractData>> 
     }
 
     return true;
+}
+
+Result<void, Error> CatalogTable::InsertTuple(const Tuple &tuple, BufferManager * buffer_manager) {
+    if (first_data_page_directory_page_id == -1) {
+        first_data_page_directory_page_id = buffer_manager->NewPage()->GetPageId();
+        DirectoryPage * p = reinterpret_cast<DirectoryPage*>(buffer_manager->GetPage(first_data_page_directory_page_id));
+        p->Init();
+    }
+
+    DirectoryPage * p = reinterpret_cast<DirectoryPage*>(buffer_manager->GetPage(first_data_page_directory_page_id));
+
+    while (p->InsertTuple(tuple, buffer_manager, this).isErr()) {
+        if (p->GetNextDirectoryPageId() == -1) {
+            DirectoryPage * new_page = reinterpret_cast<DirectoryPage*>(buffer_manager->NewPage());
+            new_page->Init();
+            new_page->SetNextDirectoryPageId(p->GetPageId());
+            std::swap(p, new_page);
+            delete new_page;
+        } else {
+            DirectoryPage * next_page = reinterpret_cast<DirectoryPage*>(buffer_manager->GetPage(p->GetNextDirectoryPageId()));
+            std::swap(next_page, p);
+            delete next_page;
+        }
+    }
+
+    return Ok();
 }

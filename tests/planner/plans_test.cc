@@ -9,7 +9,7 @@
 #include "planner/plans/insert_plan.h"
 
 TEST(PlansTest, PlansCreateTableTest1) {
-  Catalog * catalog = new Catalog{};
+  Catalog * catalog = new Catalog{nullptr};
   Parser parser{"CREATE table test (x integer)"};
   Planner planner{};
   std::unique_ptr<PlanNode> plan = planner.CreatePlan(parser.ParseStatement().unwrap());
@@ -34,7 +34,7 @@ TEST(PlansTest, PlansCreateTableTest1) {
 }
 
 TEST(PlansTest, PlansInsertTest1) {
-  Catalog * catalog = new Catalog{};
+  Catalog * catalog = new Catalog{nullptr};
   Planner planner{};
 
   Parser parser1{"CREATE table test (x integer)"};
@@ -46,8 +46,8 @@ TEST(PlansTest, PlansInsertTest1) {
   const InsertPlan * insert_plan = dynamic_cast<const InsertPlan*>(plan2.get());
   EXPECT_NE(insert_plan, nullptr);
   EXPECT_EQ(insert_plan->table, "test");
-  EXPECT_EQ(insert_plan->values.at(0).at(0).get()->type, DataType::Integer);
-  EXPECT_EQ(insert_plan->values.at(0).at(1).get()->type, DataType::Integer);
+  EXPECT_EQ(insert_plan->values.at(0).at(0)->type, DataType::Integer);
+  EXPECT_EQ(insert_plan->values.at(0).at(1)->type, DataType::Integer);
 
   EXPECT_EQ(dynamic_cast<const Data<int>*>(insert_plan->values.at(0).at(0).get())->value, 8);
   EXPECT_EQ(dynamic_cast<const Data<int>*>(insert_plan->values.at(0).at(1).get())->value, 49);

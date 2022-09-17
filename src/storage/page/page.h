@@ -9,7 +9,6 @@ public:
     char data[PAGE_SIZE]{};
 
     Page(int page_id);
-    virtual ~Page() = 0;
     char * GetData() {
         return data;
     }
