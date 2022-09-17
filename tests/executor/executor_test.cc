@@ -63,7 +63,7 @@ TEST(ExecutorTest, ExecutorCreateTableTest2) {
   EXPECT_EQ(catalog->tables.size(), 2);
 }
 
-TEST(PlansTest, ExecutorInsertTest1) {
+TEST(ExecutorTest, ExecutorInsertTest1) {
   BufferManager * buffer_manager = new BufferManager{};
   Catalog * catalog = new Catalog{buffer_manager};
   Planner planner{};
@@ -106,4 +106,35 @@ TEST(PlansTest, ExecutorInsertTest1) {
   EXPECT_EQ(data2->type, DataType::Integer);
   Data<int> * int_data2 = dynamic_cast<Data<int>*>(data2.get());
   EXPECT_EQ(int_data2->value, 49);
+}
+
+TEST(ExecutorTest, ExecutorInsertTest2) {
+  BufferManager * buffer_manager = new BufferManager{};
+  Catalog * catalog = new Catalog{buffer_manager};
+  Planner planner{};
+  Executor e{catalog};
+
+  Parser parser1{"CREATE table test (x integer, y integer)"};
+  std::unique_ptr<PlanNode> plan1 = planner.CreatePlan(parser1.ParseStatement().unwrap());
+  ExecutionOutput res1 = e.Execute(plan1.get());
+
+  EXPECT_EQ(res1.type, OutputType::CreateTable);
+  EXPECT_EQ(res1.error, false);
+  EXPECT_EQ(catalog->tables.size(), 1);
+  EXPECT_EQ(catalog->tables.at(0)->GetNumberOfColumns(), 2);
+
+  Parser parser2{"INSERT INTO test VALUES ('test', 7^2)"};
+  std::unique_ptr<PlanNode> plan2 = planner.CreatePlan(parser2.ParseStatement().unwrap());
+  ExecutionOutput res2 = e.Execute(plan2.get());
+  EXPECT_EQ(res2.error, true);
+
+  Parser parser3{"INSERT INTO test VALUES (6, NULL)"};
+  std::unique_ptr<PlanNode> plan3 = planner.CreatePlan(parser3.ParseStatement().unwrap());
+  ExecutionOutput res3 = e.Execute(plan3.get());
+  EXPECT_EQ(res3.error, true);
+
+  Parser parser4{"INSERT INTO test VALUES (6, 7)"};
+  std::unique_ptr<PlanNode> plan4 = planner.CreatePlan(parser4.ParseStatement().unwrap());
+  ExecutionOutput res4 = e.Execute(plan4.get());
+  EXPECT_EQ(res4.error, false);
 }

@@ -11,25 +11,33 @@ ExecutionOutput InsertExecutor::Execute(Catalog * catalog) {
         return res;
     }
 
-    // Validation
     CatalogTable * table = catalog->ReadTable(plan->table).unwrap();
 
-    if (plan->columns.size() == 0) {
+    if (plan->columns.size() == 0) {        
         for (int i = 0; i < plan->values.size(); i++) {
             if (!table->ValidateRow(plan->values.at(i))) {
                 res.error = true;
                 return res;
             }
         }
+
+        for (int i = 0; i < plan->values.size(); i++) {
+            Tuple t{plan->values.at(i), table};
+            auto tuple_res = table->InsertTuple(t, catalog->buffer_manager);
+
+            if (tuple_res.isErr()) {
+                res.error = true;
+                res.count = 0;
+                return res;
+            }
+        }
+
+        
     } else {
-        // TODO(dylan) : Validate other tuples
+        throw; // Not supported yet
     }
 
-    // Insertion hardcoded data to start
-    for (int i = 0; i < plan->values.size(); i++) {
-        Tuple t{plan->values.at(i), table};
-        table->InsertTuple(t, catalog->buffer_manager);
-    }
-
+    res.error = false;
+    res.count = plan->values.size();
     return res;
 }

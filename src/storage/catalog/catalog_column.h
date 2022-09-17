@@ -30,6 +30,10 @@ public:
     }
     int GetColumnSize();
 
+    std::string GetColumnName() {
+        return name;
+    }
+
     DataType GetColumnDataType() {
         return datatype;
     }

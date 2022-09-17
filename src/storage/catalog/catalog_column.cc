@@ -14,11 +14,19 @@ bool CatalogColumn::ValidateColumn() {
     if (primary_key == true && (nullable == true || unique == false)) {
         return false;
     }
-
+    if (datatype == DataType::Null) {
+        return false;
+    }
     return true;
 }
 
 bool CatalogColumn::ValidateValue(AbstractData * value) {
+    // wrong datatype
+    if (datatype != value->type || (value->type == DataType::Null && !nullable)) {
+        return false;
+    }
+    // unique still need
+    // references still need
     return true;
 }
 
@@ -29,8 +37,6 @@ int CatalogColumn::GetColumnSize() {
         return 8; // temp need to change
     } else if (datatype == DataType::Integer) {
         return 4;
-    } else if (datatype == DataType::Null) {
-        return 4; // temp need to change
     } else if (datatype == DataType::Varchar) {
         return 4; // temp need to change
     }

@@ -33,6 +33,14 @@ public:
     CatalogColumn * GetColumn(int index) const {
         return columns.at(index);
     }
+    int GetColumnIndexByName(std::string name) {
+        for (int i = 0; i < columns.size(); i++) {
+            if (columns.at(i)->GetColumnName() == name) {
+                return i;
+            }
+        }
+        return -1;
+    }
 
     Result<void, Error> InsertTuple(const Tuple &tuple, BufferManager * buffer_manager);
 
