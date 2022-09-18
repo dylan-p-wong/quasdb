@@ -53,4 +53,5 @@ public:
     }
 
     Result<void, Error> InsertTuple(const Tuple &tuple, BufferManager * buffer_manager, CatalogTable * catalog_table);
+    Result<Tuple*, Error> GetTuple(const RID &rid, BufferManager * buffer_manager, CatalogTable * catalog_table);
 };

@@ -43,3 +43,21 @@ Result<void, Error> DirectoryPage::InsertTuple(const Tuple &tuple, BufferManager
 
     return dp->InsertTuple(tuple, buffer_manager, catalog_table);
 }
+
+Result<Tuple*, Error> DirectoryPage::GetTuple(const RID &rid, BufferManager * buffer_manager, CatalogTable * catalog_table) {
+    for (int i = 0; i < GetMaxNumberOfDataPages(); i++) {
+        if (GetDataPagePageId(i) == -1) {
+            break;
+        }
+
+        if (GetDataPagePageId(i) == rid.page_number) {
+            TablePage * tp = reinterpret_cast<TablePage*>(buffer_manager->GetPage(rid.page_number));
+            return tp->GetTuple(rid, catalog_table);
+        }
+    }
+    if (GetNextDirectoryPageId() == -1) {
+        return Err(Error{ErrorType::Internal, ""});
+    }
+    DirectoryPage * dp = reinterpret_cast<DirectoryPage*>(buffer_manager->GetPage(GetNextDirectoryPageId()));
+    return dp->GetTuple(rid, buffer_manager, catalog_table);
+}

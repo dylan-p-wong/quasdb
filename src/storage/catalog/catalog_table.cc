@@ -89,3 +89,12 @@ Result<void, Error> CatalogTable::InsertTuple(const Tuple &tuple, BufferManager 
 
     return Ok();
 }
+
+Result<Tuple*, Error> CatalogTable::GetTuple(const RID & rid, BufferManager * buffer_manager) {
+    if (first_data_page_directory_page_id == -1) {
+        return Err(Error{ErrorType::Internal, ""});
+    }
+
+    DirectoryPage * dp = reinterpret_cast<DirectoryPage*>(buffer_manager->GetPage(first_data_page_directory_page_id));
+    return dp->GetTuple(rid, buffer_manager, this);
+}
