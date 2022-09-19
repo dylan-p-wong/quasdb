@@ -18,6 +18,7 @@ Result<void, Error> DirectoryPage::InsertTuple(const Tuple &tuple, BufferManager
         if (GetDataPagePageId(i) == -1) {
             TablePage * tp = reinterpret_cast<TablePage*>(buffer_manager->NewPage());
             tp->Init();
+            SetNumberOfDataPages(GetNumberOfDataPages() + 1);
             SetDataPagePageId(i, tp->GetPageId());
             SetDataPageFreeSpace(i, tp->GetFreeSpace());
         }

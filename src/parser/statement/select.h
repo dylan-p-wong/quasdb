@@ -6,11 +6,14 @@
 #include "expression.h"
 #include "statement.h"
 
+enum class FromType { Join, Table };
 enum class JoinType { Cross, Inner, Left, Right };
 enum class OrderType { ASC, DESC };
 
 class FromItem {
 public:
+    FromType type;
+    FromItem(FromType type);
     virtual ~FromItem() = 0;
 };
 

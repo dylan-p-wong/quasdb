@@ -31,7 +31,6 @@ ExecutionOutput InsertExecutor::Execute(Catalog * catalog) {
                 return res;
             }
         }
-
         
     } else {
         throw; // Not supported yet

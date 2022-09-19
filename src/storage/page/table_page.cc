@@ -10,7 +10,7 @@ Result<void, Error> TablePage::InsertTuple(const Tuple &tuple, CatalogTable * ca
     for (int i = 0; i < GetTupleCount(); i++) {
         if (GetTupleInfo(i).second == 0) {
             memcpy(GetData() + GetTupleInfo(i).first, &tuple.data, sizeof(int));
-            SetTupleInfo(i, std::make_pair(GetTupleInfo(i).first, tuple.tuple_size));       
+            SetTupleInfo(i, std::make_pair(GetTupleInfo(i).first, tuple.tuple_size));
         }
     }
 

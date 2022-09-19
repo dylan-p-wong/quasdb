@@ -51,6 +51,14 @@ public:
     void SetDataPageFreeSpace(int i, int free_space) {
         memcpy(GetData() + SIZE_DIRECTORY_PAGE_HEADER + SIZE_DATA_PAGE_INFO * i + 4, &free_space, sizeof(int));
     }
+    int GetDataPageIdSlot(int page_id) {
+        for (int i = 0; i < GetNumberOfDataPages(); i++) {
+            if (GetDataPagePageId(i) == page_id) {
+                return i;
+            }
+        }
+        return -1;
+    }
 
     Result<void, Error> InsertTuple(const Tuple &tuple, BufferManager * buffer_manager, CatalogTable * catalog_table);
     Result<Tuple*, Error> GetTuple(const RID &rid, BufferManager * buffer_manager, CatalogTable * catalog_table);

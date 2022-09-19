@@ -98,3 +98,32 @@ Result<Tuple*, Error> CatalogTable::GetTuple(const RID & rid, BufferManager * bu
     DirectoryPage * dp = reinterpret_cast<DirectoryPage*>(buffer_manager->GetPage(first_data_page_directory_page_id));
     return dp->GetTuple(rid, buffer_manager, this);
 }
+
+std::vector<Tuple*> CatalogTable::GetTuples(BufferManager * buffer_manager) {
+    std::vector<Tuple*> res;
+
+    int directory_page_id = first_data_page_directory_page_id;
+
+    while (directory_page_id >= 0) {
+        DirectoryPage * dp = reinterpret_cast<DirectoryPage*>(buffer_manager->GetPage(directory_page_id));
+
+        for (int i = 0; i < dp->GetNumberOfDataPages(); i++) {
+            if (dp->GetDataPagePageId(i) == -1) {
+                continue;
+            }
+            TablePage * tp = reinterpret_cast<TablePage*>(buffer_manager->GetPage(dp->GetDataPagePageId(i)));
+
+            for (int j = 0; j < tp->GetTupleCount(); j++) {
+                auto tuple = tp->GetTuple(RID{tp->GetPageId(), j}, this);
+
+                if (tuple.isOk()) {
+                    res.push_back(tuple.unwrap());
+                }
+            }
+        }
+
+        directory_page_id = dp->GetNextDirectoryPageId();
+    }
+
+    return res;
+}
