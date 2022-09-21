@@ -2,20 +2,14 @@
 
 CreateTableExecutor::CreateTableExecutor(const CreateTablePlan * plan) : AbstractExecutor{}, plan{plan} {}
 
-ExecutionOutput CreateTableExecutor::Execute(Catalog * catalog) {
-    ExecutionOutput res{};
-
-    res.type = OutputType::CreateTable;
+std::vector<std::vector<AbstractData*>> CreateTableExecutor::Execute(Catalog * catalog) {
 
     auto create_catalog_table_result = catalog->CreateTable(plan->table);
 
-    if (create_catalog_table_result.isOk()) {
-        res.error = false;
-    } else {
-        res.error = true;
-        res.error_type = create_catalog_table_result.unwrapErr().type;
-        res.error_message = create_catalog_table_result.unwrapErr().message;
+    if (!create_catalog_table_result.isOk()) {
+        throw Error{ErrorType::Internal, ""};
     }
 
+    std::vector<std::vector<AbstractData*>> res;
     return res;
 }

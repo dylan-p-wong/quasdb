@@ -6,6 +6,6 @@
 class AbstractExecutor {
 public:
     AbstractExecutor();
-    virtual ExecutionOutput Execute(Catalog * catalog) = 0;
+    virtual std::vector<std::vector<AbstractData*>> Execute(Catalog * catalog) = 0;
     virtual ~AbstractExecutor() = 0;
 };

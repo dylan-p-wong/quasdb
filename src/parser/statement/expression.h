@@ -1,9 +1,11 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "../lexer.h"
 #include "../../common/shared.h"
+#include "../../planner/scope.h"
 
 enum class ExpressionType {
     // Postfix
@@ -45,6 +47,7 @@ public:
     Expression(ExpressionType type);
     virtual ~Expression() = 0;
     std::unique_ptr<AbstractData> EvaluateConstant() const;
+    std::unique_ptr<AbstractData> Evaluate(const Scope & scope, std::vector<AbstractData*> row) const;
 };
 
 class Field : public Expression {

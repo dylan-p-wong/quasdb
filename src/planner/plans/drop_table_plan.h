@@ -8,5 +8,5 @@
 class DropTablePlan : public PlanNode {
 public:
     std::string table;
-    DropTablePlan(DropTable * ast);
+    DropTablePlan(DropTable * ast, Catalog * catalog);
 };

@@ -2,13 +2,9 @@
 
 InsertExecutor::InsertExecutor(const InsertPlan * plan) : AbstractExecutor{}, plan{plan} {}
 
-ExecutionOutput InsertExecutor::Execute(Catalog * catalog) {
-    ExecutionOutput res{};
-    res.type = OutputType::Insert;
-
+std::vector<std::vector<AbstractData*>> InsertExecutor::Execute(Catalog * catalog) {
     if (catalog->ReadTable(plan->table).isErr()) {
-        res.error = true;
-        return res;
+        throw Error{ErrorType::Internal, ""};
     }
 
     CatalogTable * table = catalog->ReadTable(plan->table).unwrap();
@@ -16,8 +12,7 @@ ExecutionOutput InsertExecutor::Execute(Catalog * catalog) {
     if (plan->columns.size() == 0) {        
         for (int i = 0; i < plan->values.size(); i++) {
             if (!table->ValidateRow(plan->values.at(i))) {
-                res.error = true;
-                return res;
+                throw Error{ErrorType::Internal, ""};
             }
         }
 
@@ -26,17 +21,13 @@ ExecutionOutput InsertExecutor::Execute(Catalog * catalog) {
             auto tuple_res = table->InsertTuple(t, catalog->buffer_manager);
 
             if (tuple_res.isErr()) {
-                res.error = true;
-                res.count = 0;
-                return res;
+                throw Error{ErrorType::Internal, ""};
             }
         }
         
     } else {
-        throw; // Not supported yet
+        throw Error{ErrorType::Internal, ""}; // Not supported yet
     }
-
-    res.error = false;
-    res.count = plan->values.size();
+    std::vector<std::vector<AbstractData*>> res;
     return res;
 }

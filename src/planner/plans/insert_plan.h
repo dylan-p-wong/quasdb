@@ -12,5 +12,5 @@ public:
     std::string table;
     std::vector<std::string> columns;
     std::vector<std::vector<std::unique_ptr<AbstractData>>> values;
-    InsertPlan(InsertStatement * ast);
+    InsertPlan(InsertStatement * ast, Catalog * catalog);
 };

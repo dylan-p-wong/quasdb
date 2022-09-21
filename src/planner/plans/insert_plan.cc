@@ -1,7 +1,7 @@
 #include "insert_plan.h"
 #include "../../parser/statement/expression.h"
 
-InsertPlan::InsertPlan(InsertStatement * ast) : PlanNode{PlanType::Insert}, table{ast->table}, columns{ast->columns} {
+InsertPlan::InsertPlan(InsertStatement * ast, Catalog * catalog) : PlanNode{PlanType::Insert, catalog}, table{ast->table}, columns{ast->columns} {
     std::vector<std::vector<std::unique_ptr<AbstractData>>> new_values;
     
     for (std::vector<Expression*> row : ast->values) {

@@ -7,6 +7,8 @@
 #include "plans/plan_node.h"
 
 class Planner {
+    Catalog * catalog;
 public:
+    Planner(Catalog * catalog) : catalog{catalog} {}
     std::unique_ptr<PlanNode> CreatePlan(Statement * ast);
 };

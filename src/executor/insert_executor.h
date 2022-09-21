@@ -8,5 +8,5 @@ class InsertExecutor : public AbstractExecutor {
 public:
     const InsertPlan * plan;
     InsertExecutor(const InsertPlan * plan);
-    ExecutionOutput Execute(Catalog * catalog) override;
+    std::vector<std::vector<AbstractData*>> Execute(Catalog * catalog) override;
 };

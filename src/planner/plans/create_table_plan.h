@@ -9,5 +9,5 @@
 class CreateTablePlan : public PlanNode {
 public:
     CatalogTable * table;
-    CreateTablePlan(CreateTable * create_table_statement);
+    CreateTablePlan(CreateTable * create_table_statement, Catalog * catalog);
 };

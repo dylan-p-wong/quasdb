@@ -8,5 +8,5 @@ class DropTableExecutor : public AbstractExecutor {
 public:
     const DropTablePlan * plan;
     DropTableExecutor(const DropTablePlan * plan);
-    ExecutionOutput Execute(Catalog * catalog) override;
+    std::vector<std::vector<AbstractData*>> Execute(Catalog * catalog) override;
 };

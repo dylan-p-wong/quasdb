@@ -8,5 +8,5 @@ class CreateTableExecutor : public AbstractExecutor {
 public:
     const CreateTablePlan * plan;
     CreateTableExecutor(const CreateTablePlan * plan);
-    ExecutionOutput Execute(Catalog * catalog) override;
+    std::vector<std::vector<AbstractData*>> Execute(Catalog * catalog) override;
 };

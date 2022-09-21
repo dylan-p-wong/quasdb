@@ -11,7 +11,7 @@
 TEST(PlansTest, PlansCreateTableTest1) {
   Catalog * catalog = new Catalog{nullptr};
   Parser parser{"CREATE table test (x integer)"};
-  Planner planner{};
+  Planner planner{catalog};
   std::unique_ptr<PlanNode> plan = planner.CreatePlan(parser.ParseStatement().unwrap());
   
   const CreateTablePlan * create_table_plan = dynamic_cast<const CreateTablePlan*>(plan.get());
@@ -35,7 +35,7 @@ TEST(PlansTest, PlansCreateTableTest1) {
 
 TEST(PlansTest, PlansInsertTest1) {
   Catalog * catalog = new Catalog{nullptr};
-  Planner planner{};
+  Planner planner{catalog};
 
   Parser parser1{"CREATE table test (x integer)"};
   std::unique_ptr<PlanNode> plan1 = planner.CreatePlan(parser1.ParseStatement().unwrap());

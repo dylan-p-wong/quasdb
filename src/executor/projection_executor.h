@@ -2,13 +2,13 @@
 
 #include "abstract_executor.h"
 #include "../planner/plans/plan_node.h"
-#include "../planner/plans/sequential_scan_plan.h"
+#include "../planner/plans/projection_plan.h"
 #include "../storage/table/tuple.h"
 
-class SequentialScanExecutor : public AbstractExecutor {
-    const SequentialScanPlan * plan;
+class ProjectionExecutor : public AbstractExecutor {
+    const ProjectionPlan * plan;
 public:
-    SequentialScanExecutor(const SequentialScanPlan * plan);
+    ProjectionExecutor(const ProjectionPlan * plan);
     // ExecutionOutput Execute(Catalog * catalog) override;
     std::vector<std::vector<AbstractData*>> Execute(Catalog * catalog) override;
 };

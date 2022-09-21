@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "../../storage/catalog/catalog.h"
+#include "../scope.h"
 
 enum class PlanType {
     CreateTable,
@@ -18,14 +19,17 @@ enum class PlanType {
     Distinct,
     NestedLoopJoin,
     NestedIndexJoin,
-    HashJoin
+    HashJoin,
+    Projection
 };
 
 class PlanNode {
 public:
+    Catalog * catalog;
     // Schema for the output of the plan node
-    std::vector<PlanNode*> children;
+    // std::vector<PlanNode*> children;
     PlanType type;
-    PlanNode(PlanType type);
+    PlanNode(PlanType type, Catalog * catalog);
+    virtual Scope GetScope() const { Scope s; return s; }
     virtual ~PlanNode() = 0;
 };

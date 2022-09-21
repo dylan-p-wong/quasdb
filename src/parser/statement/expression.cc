@@ -232,3 +232,154 @@ std::unique_ptr<AbstractData> Expression::EvaluateConstant() const {
         throw;
     }
 }
+
+std::unique_ptr<AbstractData> Expression::Evaluate(const Scope & scope, std::vector<AbstractData*> row) const {
+    if (dynamic_cast<const InfixOperation*>(this)) {
+        const InfixOperation * e = dynamic_cast<const InfixOperation*>(this);
+
+        auto left_p = e->left->Evaluate(scope, row);
+        auto right_p = e->right->Evaluate(scope, row);
+
+        AbstractData * left_data = left_p.get();
+        AbstractData * right_data = right_p.get();
+
+        if (type == ExpressionType::And) {
+            
+        } else if (type == ExpressionType::Or) {
+            
+        } else if (type == ExpressionType::Add) {
+            Data<int> * left_int_data = dynamic_cast<Data<int>*>(left_data);
+            Data<int> * right_int_data = dynamic_cast<Data<int>*>(right_data);
+
+            if (left_int_data == nullptr || right_int_data == nullptr) {
+                return nullptr;
+            }
+
+            return std::make_unique<Data<int>>(DataType::Integer, left_int_data->value + right_int_data->value);
+        } else if (type == ExpressionType::Subtract) {
+            Data<int> * left_int_data = dynamic_cast<Data<int>*>(left_data);
+            Data<int> * right_int_data = dynamic_cast<Data<int>*>(right_data);
+
+            if (left_int_data == nullptr || right_int_data == nullptr) {
+                return nullptr;
+            }
+
+            return std::make_unique<Data<int>>(DataType::Integer, left_int_data->value - right_int_data->value);
+        } else if (type == ExpressionType::Multiply) {
+            Data<int> * left_int_data = dynamic_cast<Data<int>*>(left_data);
+            Data<int> * right_int_data = dynamic_cast<Data<int>*>(right_data);
+
+            if (left_int_data == nullptr || right_int_data == nullptr) {
+                return nullptr;
+            }
+
+            return std::make_unique<Data<int>>(DataType::Integer, left_int_data->value * right_int_data->value);
+        } else if (type == ExpressionType::Divide) {
+            Data<int> * left_int_data = dynamic_cast<Data<int>*>(left_data);
+            Data<int> * right_int_data = dynamic_cast<Data<int>*>(right_data);
+
+            if (left_int_data == nullptr || right_int_data == nullptr) {
+                return nullptr;
+            }
+
+            // Handle divide by 0
+
+            return std::make_unique<Data<int>>(DataType::Integer, left_int_data->value / right_int_data->value);
+        } else if (type == ExpressionType::Exponentiate) {
+            Data<int> * left_int_data = dynamic_cast<Data<int>*>(left_data);
+            Data<int> * right_int_data = dynamic_cast<Data<int>*>(right_data);
+
+            if (left_int_data == nullptr || right_int_data == nullptr) {
+                return nullptr;
+            }
+
+            return std::make_unique<Data<int>>(DataType::Integer, (int) pow((float) left_int_data->value, (float) right_int_data->value));
+        } else if (type == ExpressionType::GreaterThan) {
+            Data<int> * left_int_data = dynamic_cast<Data<int>*>(left_data);
+            Data<int> * right_int_data = dynamic_cast<Data<int>*>(right_data);
+
+            if (left_int_data == nullptr || right_int_data == nullptr) {
+                return nullptr;
+            }
+
+            return std::make_unique<Data<bool>>(DataType::Boolean, left_int_data->value > right_int_data->value);
+        } else if (type == ExpressionType::LessThan) {
+            Data<int> * left_int_data = dynamic_cast<Data<int>*>(left_data);
+            Data<int> * right_int_data = dynamic_cast<Data<int>*>(right_data);
+
+            if (left_int_data == nullptr || right_int_data == nullptr) {
+                return nullptr;
+            }
+
+            return std::make_unique<Data<bool>>(DataType::Boolean, left_int_data->value < right_int_data->value);
+        } else if (type == ExpressionType::Modulo) {
+            Data<int> * left_int_data = dynamic_cast<Data<int>*>(left_data);
+            Data<int> * right_int_data = dynamic_cast<Data<int>*>(right_data);
+
+            if (left_int_data == nullptr || right_int_data == nullptr) {
+                return nullptr;
+            }
+
+            return std::make_unique<Data<int>>(DataType::Integer, left_int_data->value % right_int_data->value);
+        } else if (type == ExpressionType::Equal) {
+            Data<int> * left_int_data = dynamic_cast<Data<int>*>(left_data);
+            Data<int> * right_int_data = dynamic_cast<Data<int>*>(right_data);
+
+            if (left_int_data == nullptr || right_int_data == nullptr) {
+                return nullptr;
+            }
+
+            return std::make_unique<Data<bool>>(DataType::Boolean, left_int_data->value == right_int_data->value);
+        } else if (type == ExpressionType::NotEqual) {
+            Data<int> * left_int_data = dynamic_cast<Data<int>*>(left_data);
+            Data<int> * right_int_data = dynamic_cast<Data<int>*>(right_data);
+
+            if (left_int_data == nullptr || right_int_data == nullptr) {
+                return nullptr;
+            }
+
+            return std::make_unique<Data<bool>>(DataType::Boolean, left_int_data->value != right_int_data->value);
+        } else {
+            // Handle this error? Should never happen.
+            throw;
+        }
+    } else if (dynamic_cast<const PrefixOperation*>(this)) {
+        // TODO(Dylan)
+    } else if (dynamic_cast<const PostfixOperation*>(this)) {
+        // TODO(Dylan)
+    } else if (dynamic_cast<const IsNullOperation*>(this)) {
+        // TODO(Dylan)
+    } else if (dynamic_cast<const StringLiteral*>(this)) {
+        return std::make_unique<Data<std::string>>(DataType::Varchar, dynamic_cast<const StringLiteral*>(this)->value);
+    } else if (dynamic_cast<const FloatLiteral*>(this)) {
+        return std::make_unique<Data<float>>(DataType::Float, dynamic_cast<const FloatLiteral*>(this)->value);
+    } else if (dynamic_cast<const IntegerLiteral*>(this)) {
+        return std::make_unique<Data<int>>(DataType::Integer, dynamic_cast<const IntegerLiteral*>(this)->value);
+    } else if (dynamic_cast<const BooleanLiteral*>(this)) {
+        return std::make_unique<Data<bool>>(DataType::Boolean, dynamic_cast<const BooleanLiteral*>(this)->value);
+    } else if (dynamic_cast<const NullLiteral*>(this)) {
+        return std::make_unique<Data<int>>(DataType::Null, 0);
+    } else if (dynamic_cast<const Field*>(this)) {
+        std::string from = dynamic_cast<const Field*>(this)->from;
+        std::string field = dynamic_cast<const Field*>(this)->field;
+        
+        if (scope.GetFieldIndex(from + "." + field) < 0) {
+            throw;
+        }
+        
+        // temp fix
+        AbstractData * d = row.at(scope.GetFieldIndex(from + "." + field));
+        if (d->type == DataType::Integer) {
+            return std::make_unique<Data<int>>(DataType::Integer, dynamic_cast<Data<int>*>(d)->value); 
+        } else if (d->type == DataType::Boolean) {
+            return std::make_unique<Data<bool>>(DataType::Boolean, dynamic_cast<Data<bool>*>(d)->value); 
+        } else {
+            throw;
+        }
+
+        // return row.at(scope.GetFieldIndex(from + "." + field));
+    } else {
+        // Handle this error? Should never happen.
+        throw;
+    }
+}

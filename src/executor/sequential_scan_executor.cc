@@ -2,14 +2,7 @@
 
 SequentialScanExecutor::SequentialScanExecutor(const SequentialScanPlan * plan) : plan{plan} {}
 
-ExecutionOutput SequentialScanExecutor::Execute(Catalog * catalog) {
-    ExecutionOutput res{};
-    res.type = OutputType::Select;
-
-    if (catalog->ReadTable(plan->table).isErr()) {
-        res.error = true;
-        return res;
-    }
+std::vector<std::vector<AbstractData*>> SequentialScanExecutor::Execute(Catalog * catalog) {
 
     CatalogTable * table = catalog->ReadTable(plan->table).unwrap();
 
@@ -25,7 +18,5 @@ ExecutionOutput SequentialScanExecutor::Execute(Catalog * catalog) {
         rows.emplace_back(row);
     }
 
-    res.rows = rows;
-
-    return res;
+    return rows;
 }

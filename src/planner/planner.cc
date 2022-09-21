@@ -9,20 +9,22 @@
 #include "./plans/drop_table_plan.h"
 #include "./plans/insert_plan.h"
 #include "./plans/sequential_scan_plan.h"
+#include "./plans/filter_plan.h"
+#include "./plans/projection_plan.h"
 
 std::unique_ptr<PlanNode> Planner::CreatePlan(Statement * ast) {
     switch (ast->type) {
         case StatementType::CreateTable: {
             CreateTable * create_table_statement = dynamic_cast<CreateTable*>(ast);
-            return std::make_unique<CreateTablePlan>(create_table_statement);
+            return std::make_unique<CreateTablePlan>(create_table_statement, catalog);
         }
         case StatementType::DropTable: {
             DropTable * drop_table_statement = dynamic_cast<DropTable*>(ast);
-            return std::make_unique<DropTablePlan>(drop_table_statement);
+            return std::make_unique<DropTablePlan>(drop_table_statement, catalog);
         }
         case StatementType::Insert: {
             InsertStatement * insert_table_statement = dynamic_cast<InsertStatement*>(ast);
-            return std::make_unique<InsertPlan>(insert_table_statement);
+            return std::make_unique<InsertPlan>(insert_table_statement, catalog);
         }
         case StatementType::Select: {
             SelectStatement * select_statement = dynamic_cast<SelectStatement*>(ast);
@@ -32,9 +34,21 @@ std::unique_ptr<PlanNode> Planner::CreatePlan(Statement * ast) {
                 throw; // joins not supported yet
             }
 
+            std::unique_ptr<PlanNode> node = std::make_unique<SequentialScanPlan>(dynamic_cast<TableFromItem*>(select_statement->from.at(0))->name, catalog);
+
+            // PlanNode * node = new SequentialScanPlan{dynamic_cast<TableFromItem*>(select_statement->from.at(0))->name, catalog};
+
             // build where clause
+            // if (select_statement->where) {
+            //     node = new FilterPlan{node, select_statement->where};
+            // }
 
             // build select clause
+
+            if (select_statement->select.size()) {
+                // node = new ProjectionPlan{node, select_statement->select, catalog};
+                node = std::make_unique<ProjectionPlan>(node.release(), select_statement->select, catalog); // should not use release but temp
+            }
 
             // build having clause
 
@@ -44,7 +58,8 @@ std::unique_ptr<PlanNode> Planner::CreatePlan(Statement * ast) {
 
             // build limit clause
             
-            return std::make_unique<SequentialScanPlan>(dynamic_cast<TableFromItem*>(select_statement->from.at(0))->name);
+            // return std::make_unique<SequentialScanPlan>(dynamic_cast<TableFromItem*>(select_statement->from.at(0))->name, catalog);
+            return std::move(node);
         }
         default:
             throw;
