@@ -11,5 +11,6 @@ class FilterPlan : public PlanNode {
 public:
     PlanNode * source;
     Expression* expression;
-    FilterPlan(PlanNode*, Expression*);
+    FilterPlan(PlanNode * source, Expression * expression, Catalog * catalog);
+    Scope GetScope() const override;
 };

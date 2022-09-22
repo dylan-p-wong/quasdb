@@ -20,7 +20,8 @@ enum class PlanType {
     NestedLoopJoin,
     NestedIndexJoin,
     HashJoin,
-    Projection
+    Projection,
+    Filter
 };
 
 class PlanNode {

@@ -38,10 +38,10 @@ std::unique_ptr<PlanNode> Planner::CreatePlan(Statement * ast) {
 
             // PlanNode * node = new SequentialScanPlan{dynamic_cast<TableFromItem*>(select_statement->from.at(0))->name, catalog};
 
-            // build where clause
-            // if (select_statement->where) {
-            //     node = new FilterPlan{node, select_statement->where};
-            // }
+            //  build where clause
+            if (select_statement->where) {
+                node = std::make_unique<FilterPlan>(node.release(), select_statement->where, catalog); // should not use release but temp
+            }
 
             // build select clause
 

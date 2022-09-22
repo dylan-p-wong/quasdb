@@ -6,6 +6,7 @@ class AbstractData {
 public:
     DataType type;
     AbstractData(DataType type) : type{type} {}
+    bool IsTruthy();
     virtual ~AbstractData() = 0;
 };
 
