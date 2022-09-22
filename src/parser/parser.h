@@ -31,6 +31,7 @@ public:
     Result<std::vector<SelectItem*>, Error> ParseSelectClause();
     Result<std::vector<FromItem*>, Error> ParseFromClause();
     Result<FromItem*, Error> ParseFromItem();
+    Result<JoinType, Error> ParseJoinType();
     Result<Expression*, Error> ParseWhereClause();
     Result<std::vector<Expression*>, Error> ParseGroupByClause();
     Result<Expression*, Error> ParseHavingClause();

@@ -7,7 +7,7 @@
 #include "statement.h"
 
 enum class FromType { Join, Table };
-enum class JoinType { Cross, Inner, Left, Right };
+enum class JoinType { Outer, Inner, Left, Right };
 enum class OrderType { ASC, DESC };
 
 class FromItem {
@@ -24,13 +24,13 @@ public:
     TableFromItem(std::string name, std::string alias);
 };
 
-// TODO(Dylan) Still need to implement joins for select
 class JoinFromItem : public FromItem {
 public:
     FromItem * left;
     FromItem * right;
-    JoinType type;
+    JoinType join_type;
     Expression * predicate;
+    JoinFromItem(JoinType type, FromItem * left, FromItem * right, Expression * on);
 };
 
 class SelectItem {

@@ -433,3 +433,31 @@ TEST(ParserTest, ParserUpdate2) {
   EXPECT_EQ(i->set["r"]->Display(), "8");
 }
 
+TEST(ParserTest, ParserJoin1) {
+  Parser p{"select test.x from test1 join test2 on test1.id=test2.id where test.x=8"};
+  auto s = p.ParseStatement();
+  EXPECT_EQ(s.isOk(), true);
+  SelectStatement * i = dynamic_cast<SelectStatement*>(s.unwrap());
+  EXPECT_NE(i, nullptr);
+  EXPECT_EQ(i->from.size(), 1);
+  EXPECT_EQ(i->from.at(0)->type, FromType::Join);
+  EXPECT_EQ(dynamic_cast<JoinFromItem*>(i->from.at(0))->join_type, JoinType::Inner);
+  EXPECT_EQ(dynamic_cast<JoinFromItem*>(i->from.at(0))->left->type, FromType::Table);
+  EXPECT_EQ(dynamic_cast<JoinFromItem*>(i->from.at(0))->right->type, FromType::Table);
+}
+
+TEST(ParserTest, ParserJoin2) {
+  Parser p{"select test.x from test1 outer join test2 on test1.id=test2.id, tes3, abc left join def on r=r"};
+  auto s = p.ParseStatement();
+  EXPECT_EQ(s.isOk(), true);
+  SelectStatement * i = dynamic_cast<SelectStatement*>(s.unwrap());
+  EXPECT_NE(i, nullptr);
+  EXPECT_EQ(i->from.size(), 3);
+  EXPECT_EQ(i->from.at(0)->type, FromType::Join);
+  EXPECT_EQ(i->from.at(1)->type, FromType::Table);
+  EXPECT_EQ(i->from.at(2)->type, FromType::Join);
+  EXPECT_EQ(dynamic_cast<JoinFromItem*>(i->from.at(0))->join_type, JoinType::Outer);
+  EXPECT_EQ(dynamic_cast<JoinFromItem*>(i->from.at(2))->join_type, JoinType::Left);
+  EXPECT_EQ(dynamic_cast<JoinFromItem*>(i->from.at(0))->predicate->Display(), "(test1.id = test2.id)");
+  EXPECT_EQ(dynamic_cast<JoinFromItem*>(i->from.at(2))->predicate->Display(), "(r = r)");
+}

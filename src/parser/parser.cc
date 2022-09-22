@@ -819,7 +819,30 @@ Result<std::vector<FromItem*>, Error> Parser::ParseFromClause() {
         }
         FromItem * item = i.unwrap();
 
-        // TODO(Dylan) Add joins
+        auto is_join_token_keyword = [](Token t) { return t.type ==  TokenType::Join || t.type == TokenType::Inner || t.type == TokenType::Left || t.type == TokenType::Right || t.type == TokenType::Outer; };
+
+        while (lexer->Peek().isOk() && is_join_token_keyword(lexer->Peek().unwrap())) {
+            Result<JoinType, Error> join_type = ParseJoinType();
+            if (join_type.isErr()) {
+                return Err(join_type.unwrapErr());
+            }
+            Result<FromItem*, Error> right = ParseFromItem();
+            if (right.isErr()) {
+                return Err(right.unwrapErr());
+            }
+
+            if (NextExpect(TokenType::On).isErr()) {
+                return Err(Error{ErrorType::Parse, "Expected ON but found another."});
+            }
+
+            Result<Expression*, Error> on = ParseExpression(0);
+
+            if (on.isErr()) {
+                return Err(on.unwrapErr());
+            }
+
+            item = new JoinFromItem{join_type.unwrap(), item, right.unwrap(), on.unwrap()};
+        }
 
         from.push_back(item);
 
@@ -851,6 +874,36 @@ Result<FromItem*, Error> Parser::ParseFromItem() {
 
     FromItem * res = new TableFromItem{identifier.unwrap().value, alias};
     return Ok(res);
+}
+
+Result<JoinType, Error> Parser::ParseJoinType() {
+    JoinType join_type = JoinType::Inner;
+
+    auto is_join_token_keyword = [](Token t) { return t.type ==  TokenType::Join || t.type == TokenType::Inner || t.type == TokenType::Left || t.type == TokenType::Right || t.type == TokenType::Outer; };
+
+    std::optional<Token> t = NextIf(is_join_token_keyword);
+
+    if (!t.has_value()) {
+        return Err(Error{ErrorType::Parse, "Expected join identifier but found another."});
+    }
+
+    if (t.value().type == TokenType::Join) {
+        return Ok(join_type);
+    } else if (t.value().type == TokenType::Inner) {
+        join_type = JoinType::Inner;
+    } else if (t.value().type == TokenType::Outer) {
+        join_type = JoinType::Outer;
+    } else if (t.value().type == TokenType::Left) {
+        join_type = JoinType::Left;
+    } else if (t.value().type == TokenType::Right) {
+        join_type = JoinType::Right;
+    }
+
+    if (NextExpect(TokenType::Join).isErr()) {
+        return Err(Error{ErrorType::Parse, "Expected join identifier but found another."});
+    }
+
+    return Ok(join_type);
 }
 
 Result<Expression*, Error> Parser::ParseWhereClause() {
