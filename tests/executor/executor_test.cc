@@ -368,3 +368,76 @@ TEST(ExecutorTest, ExecutorSelectTest4) {
   EXPECT_EQ(dynamic_cast<Data<int>*>(res8.rows.at(0).at(0))->value, 12);
   EXPECT_EQ(dynamic_cast<Data<int>*>(res8.rows.at(1).at(0))->value, 21);
 }
+
+
+TEST(ExecutorTest, ExecutorSelectTest5) {
+  BufferManager * buffer_manager = new BufferManager{};
+  Catalog * catalog = new Catalog{buffer_manager};
+  Planner planner{catalog};
+  Executor e{catalog};
+
+  Parser parser1{"CREATE table test1 (x integer, y integer, z integer)"};
+  std::unique_ptr<PlanNode> plan1 = planner.CreatePlan(parser1.ParseStatement().unwrap());
+  ExecutionOutput res1 = e.Execute(plan1.get());
+
+  EXPECT_EQ(res1.error, false);
+  EXPECT_EQ(catalog->tables.size(), 1);
+  EXPECT_EQ(catalog->tables.at(0)->GetNumberOfColumns(), 3);
+
+  Parser parser2{"INSERT INTO test1 VALUES (1, 2, 3)"};
+  std::unique_ptr<PlanNode> plan2 = planner.CreatePlan(parser2.ParseStatement().unwrap());
+  ExecutionOutput res2 = e.Execute(plan2.get());
+  EXPECT_EQ(res2.error, false);
+
+  Parser parser3{"INSERT INTO test1 VALUES (4, 5, 6)"};
+  std::unique_ptr<PlanNode> plan3 = planner.CreatePlan(parser3.ParseStatement().unwrap());
+  ExecutionOutput res3 = e.Execute(plan3.get());
+  EXPECT_EQ(res3.error, false);
+
+  Parser parser4{"INSERT INTO test1 VALUES (7, 8, 9)"};
+  std::unique_ptr<PlanNode> plan4 = planner.CreatePlan(parser4.ParseStatement().unwrap());
+  ExecutionOutput res4 = e.Execute(plan4.get());
+  EXPECT_EQ(res4.error, false);
+
+  Parser parser5{"CREATE table test2 (x integer, y integer)"};
+  std::unique_ptr<PlanNode> plan5 = planner.CreatePlan(parser5.ParseStatement().unwrap());
+  ExecutionOutput res5 = e.Execute(plan5.get());
+  EXPECT_EQ(res5.error, false);
+  EXPECT_EQ(catalog->tables.size(), 2);
+  EXPECT_EQ(catalog->tables.at(1)->GetNumberOfColumns(), 2);
+
+  Parser parser6{"INSERT INTO test2 VALUES (10, 11)"};
+  std::unique_ptr<PlanNode> plan6 = planner.CreatePlan(parser6.ParseStatement().unwrap());
+  ExecutionOutput res6 = e.Execute(plan6.get());
+  EXPECT_EQ(res6.error, false);
+
+  Parser parser7{"INSERT INTO test2 VALUES (12, 13)"};
+  std::unique_ptr<PlanNode> plan7 = planner.CreatePlan(parser7.ParseStatement().unwrap());
+  ExecutionOutput res7 = e.Execute(plan7.get());
+  EXPECT_EQ(res7.error, false);
+
+  Parser parser8{"INSERT INTO test2 VALUES (14, 15)"};
+  std::unique_ptr<PlanNode> plan8 = planner.CreatePlan(parser8.ParseStatement().unwrap());
+  ExecutionOutput res8 = e.Execute(plan8.get());
+  EXPECT_EQ(res8.error, false);
+
+  Parser parser9{"select * from test1 join test2 on true"};
+  std::unique_ptr<PlanNode> plan9 = planner.CreatePlan(parser9.ParseStatement().unwrap());
+  ExecutionOutput res9 = e.Execute(plan9.get());
+  EXPECT_EQ(res9.error, false);
+  EXPECT_EQ(res9.rows.size(), 9);
+  EXPECT_EQ(res9.rows.at(0).size(), 5);
+
+  Parser parser10{"select test1.z + test2.x, test1.z, test2.x from test1 join test2 on test1.z + test2.x > 20"};
+  std::unique_ptr<PlanNode> plan10 = planner.CreatePlan(parser10.ParseStatement().unwrap());
+  ExecutionOutput res10 = e.Execute(plan10.get());
+  EXPECT_EQ(res10.error, false);
+  EXPECT_EQ(res10.rows.size(), 2);
+  EXPECT_EQ(res10.rows.at(0).size(), 3);
+  EXPECT_EQ(dynamic_cast<Data<int>*>(res10.rows.at(0).at(0))->value, 21);
+  EXPECT_EQ(dynamic_cast<Data<int>*>(res10.rows.at(0).at(1))->value, 9);
+  EXPECT_EQ(dynamic_cast<Data<int>*>(res10.rows.at(0).at(2))->value, 12);
+  EXPECT_EQ(dynamic_cast<Data<int>*>(res10.rows.at(1).at(0))->value, 23);
+  EXPECT_EQ(dynamic_cast<Data<int>*>(res10.rows.at(1).at(1))->value, 9);
+  EXPECT_EQ(dynamic_cast<Data<int>*>(res10.rows.at(1).at(2))->value, 14);
+}

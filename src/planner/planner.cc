@@ -11,6 +11,7 @@
 #include "./plans/sequential_scan_plan.h"
 #include "./plans/filter_plan.h"
 #include "./plans/projection_plan.h"
+#include "./plans/nested_join_plan.h"
 
 std::unique_ptr<PlanNode> Planner::CreatePlan(Statement * ast) {
     switch (ast->type) {
@@ -30,11 +31,13 @@ std::unique_ptr<PlanNode> Planner::CreatePlan(Statement * ast) {
             SelectStatement * select_statement = dynamic_cast<SelectStatement*>(ast);
             
             // build from clause
-            if (select_statement->from.at(0)->type != FromType::Table) {
-                throw; // joins not supported yet
-            }
 
-            std::unique_ptr<PlanNode> node = std::make_unique<SequentialScanPlan>(dynamic_cast<TableFromItem*>(select_statement->from.at(0))->name, catalog);
+            std::unique_ptr<PlanNode> node = BuildFromNodePlan(select_statement->from.at(0));
+
+            for (int i = 1; i < select_statement->from.size(); i++) {
+                std::unique_ptr<PlanNode> right = BuildFromNodePlan(select_statement->from.at(i));
+                node = std::make_unique<NestedJoinPlan>(node.release(), right.release(), nullptr, catalog); // should not use release but temp
+            }
 
             //  build where clause
             if (select_statement->where) {
@@ -48,7 +51,6 @@ std::unique_ptr<PlanNode> Planner::CreatePlan(Statement * ast) {
 
             // build having clause
             
-
             // build order clause
 
             // build offset clause
@@ -60,5 +62,17 @@ std::unique_ptr<PlanNode> Planner::CreatePlan(Statement * ast) {
         }
         default:
             throw;
+    }
+}
+
+std::unique_ptr<PlanNode> Planner::BuildFromNodePlan(FromItem * from_item) {
+    if (from_item->type == FromType::Table) {
+        return std::make_unique<SequentialScanPlan>(dynamic_cast<TableFromItem*>(from_item)->name, catalog);
+    } else if (from_item->type == FromType::Join) {
+        JoinFromItem * j = dynamic_cast<JoinFromItem*>(from_item);
+        std::unique_ptr<PlanNode> left = BuildFromNodePlan(j->left);
+        std::unique_ptr<PlanNode> right = BuildFromNodePlan(j->right);
+
+        return std::make_unique<NestedJoinPlan>(left.release(), right.release(), j->predicate, catalog); // should not use release but temp
     }
 }

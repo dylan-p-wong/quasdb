@@ -98,7 +98,7 @@ std::string InfixOperation::Display() {
 }
 
 std::unique_ptr<AbstractData> Expression::EvaluateConstant() const {
-    Scope s;
+    Scope s{0};
     std::vector<AbstractData*> v;
     return Evaluate(s, v);
 }

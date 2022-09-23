@@ -31,6 +31,6 @@ public:
     // std::vector<PlanNode*> children;
     PlanType type;
     PlanNode(PlanType type, Catalog * catalog);
-    virtual Scope GetScope() const { Scope s; return s; }
+    virtual Scope GetScope() const { Scope s{0}; return s; }
     virtual ~PlanNode() = 0;
 };

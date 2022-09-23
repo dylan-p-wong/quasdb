@@ -11,7 +11,7 @@ Scope SequentialScanPlan::GetScope() const {
         throw;
     }
 
-    Scope s;
+    Scope s{catalog->ReadTable(table).unwrap()->GetNumberOfColumns()};
     
     CatalogTable * catalog_table = catalog->ReadTable(table).unwrap();
     std::vector<CatalogColumn*> columns = catalog_table->columns;
