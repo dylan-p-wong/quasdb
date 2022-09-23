@@ -31,12 +31,10 @@ std::unique_ptr<PlanNode> Planner::CreatePlan(Statement * ast) {
             SelectStatement * select_statement = dynamic_cast<SelectStatement*>(ast);
             
             // build from clause
-
             std::unique_ptr<PlanNode> node = BuildFromNodePlan(select_statement->from.at(0));
-
             for (int i = 1; i < select_statement->from.size(); i++) {
                 std::unique_ptr<PlanNode> right = BuildFromNodePlan(select_statement->from.at(i));
-                node = std::make_unique<NestedJoinPlan>(node.release(), right.release(), nullptr, catalog); // should not use release but temp
+                node = std::make_unique<NestedJoinPlan>(node.release(), right.release(), nullptr, JoinType::Outer, catalog); // should not use release but temp
             }
 
             //  build where clause
@@ -67,12 +65,15 @@ std::unique_ptr<PlanNode> Planner::CreatePlan(Statement * ast) {
 
 std::unique_ptr<PlanNode> Planner::BuildFromNodePlan(FromItem * from_item) {
     if (from_item->type == FromType::Table) {
+        if (dynamic_cast<TableFromItem*>(from_item)->alias.size() > 0) {
+            return std::make_unique<SequentialScanPlan>(dynamic_cast<TableFromItem*>(from_item)->name, dynamic_cast<TableFromItem*>(from_item)->alias, catalog);
+        }
         return std::make_unique<SequentialScanPlan>(dynamic_cast<TableFromItem*>(from_item)->name, catalog);
     } else if (from_item->type == FromType::Join) {
         JoinFromItem * j = dynamic_cast<JoinFromItem*>(from_item);
         std::unique_ptr<PlanNode> left = BuildFromNodePlan(j->left);
         std::unique_ptr<PlanNode> right = BuildFromNodePlan(j->right);
 
-        return std::make_unique<NestedJoinPlan>(left.release(), right.release(), j->predicate, catalog); // should not use release but temp
+        return std::make_unique<NestedJoinPlan>(left.release(), right.release(), j->predicate, j->join_type, catalog); // should not use release but temp
     }
 }

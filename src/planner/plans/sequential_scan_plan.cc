@@ -6,6 +6,12 @@ SequentialScanPlan::SequentialScanPlan(std::string table, Catalog * catalog) : P
     }
 }
 
+SequentialScanPlan::SequentialScanPlan(std::string table, std::string alias, Catalog * catalog) : PlanNode{PlanType::SequentialScan, catalog}, has_alias{true}, alias{alias}, table{table} {
+    if (catalog->ReadTable(table).isErr()) {
+        throw;
+    }
+}
+
 Scope SequentialScanPlan::GetScope() const {
     if (catalog->ReadTable(table).isErr()) {
         throw;
@@ -17,7 +23,11 @@ Scope SequentialScanPlan::GetScope() const {
     std::vector<CatalogColumn*> columns = catalog_table->columns;
 
     for (int i = 0; i < columns.size(); i++) {
-        s.AddFieldToScope(catalog_table->name + "." + columns.at(i)->name, i);
+        if (has_alias) {
+            s.AddFieldToScope(alias + "." + columns.at(i)->name, i);
+        } else {
+            s.AddFieldToScope(catalog_table->name + "." + columns.at(i)->name, i);
+        }
     }
 
     return s;

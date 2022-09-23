@@ -21,7 +21,11 @@ std::vector<std::vector<AbstractData*>> NestedJoinExecutor::Execute(Catalog * ca
                 res_row.emplace_back(data);
             }
 
-            if (plan->predicate->Evaluate(scope, res_row)->IsTruthy()) {
+            bool on_true = plan->predicate == nullptr ? true : plan->predicate->Evaluate(scope, res_row)->IsTruthy();
+            
+            if (plan->join_type == JoinType::Outer && on_true) {
+                res_rows.emplace_back(res_row);
+            } else if (plan->join_type == JoinType::Inner && on_true) {
                 res_rows.emplace_back(res_row);
             }
         }
