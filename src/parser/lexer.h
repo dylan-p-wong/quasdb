@@ -9,7 +9,8 @@
 #include "../common/error.h"
 
 enum TokenType {
-    NumberValue,
+    IntegerValue,
+    DecimalValue,
     StringValue,
     IdentifierValue,
     // Symbols

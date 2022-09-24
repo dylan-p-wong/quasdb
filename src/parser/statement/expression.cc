@@ -122,7 +122,7 @@ std::unique_ptr<AbstractData> Expression::Evaluate(const Scope & scope, std::vec
             Data<int> * right_int_data = dynamic_cast<Data<int>*>(right_data);
 
             if (left_int_data == nullptr || right_int_data == nullptr) {
-                return nullptr;
+                throw Error{ErrorType::Internal, "Unsupported type."};
             }
 
             return std::make_unique<Data<int>>(DataType::Integer, left_int_data->value + right_int_data->value);
@@ -131,7 +131,7 @@ std::unique_ptr<AbstractData> Expression::Evaluate(const Scope & scope, std::vec
             Data<int> * right_int_data = dynamic_cast<Data<int>*>(right_data);
 
             if (left_int_data == nullptr || right_int_data == nullptr) {
-                return nullptr;
+                throw Error{ErrorType::Internal, "Unsupported type."};
             }
 
             return std::make_unique<Data<int>>(DataType::Integer, left_int_data->value - right_int_data->value);
@@ -140,7 +140,7 @@ std::unique_ptr<AbstractData> Expression::Evaluate(const Scope & scope, std::vec
             Data<int> * right_int_data = dynamic_cast<Data<int>*>(right_data);
 
             if (left_int_data == nullptr || right_int_data == nullptr) {
-                return nullptr;
+                throw Error{ErrorType::Internal, "Unsupported type."};
             }
 
             return std::make_unique<Data<int>>(DataType::Integer, left_int_data->value * right_int_data->value);
@@ -149,7 +149,7 @@ std::unique_ptr<AbstractData> Expression::Evaluate(const Scope & scope, std::vec
             Data<int> * right_int_data = dynamic_cast<Data<int>*>(right_data);
 
             if (left_int_data == nullptr || right_int_data == nullptr) {
-                return nullptr;
+                throw Error{ErrorType::Internal, "Unsupported type."};
             }
 
             // Handle divide by 0
@@ -163,7 +163,7 @@ std::unique_ptr<AbstractData> Expression::Evaluate(const Scope & scope, std::vec
             Data<int> * right_int_data = dynamic_cast<Data<int>*>(right_data);
 
             if (left_int_data == nullptr || right_int_data == nullptr) {
-                return nullptr;
+                throw Error{ErrorType::Internal, "Unsupported type."};
             }
 
             return std::make_unique<Data<int>>(DataType::Integer, (int) pow((float) left_int_data->value, (float) right_int_data->value));
@@ -172,7 +172,7 @@ std::unique_ptr<AbstractData> Expression::Evaluate(const Scope & scope, std::vec
             Data<int> * right_int_data = dynamic_cast<Data<int>*>(right_data);
 
             if (left_int_data == nullptr || right_int_data == nullptr) {
-                return nullptr;
+                throw Error{ErrorType::Internal, "Unsupported type."};
             }
 
             return std::make_unique<Data<bool>>(DataType::Boolean, left_int_data->value > right_int_data->value);
@@ -181,7 +181,7 @@ std::unique_ptr<AbstractData> Expression::Evaluate(const Scope & scope, std::vec
             Data<int> * right_int_data = dynamic_cast<Data<int>*>(right_data);
 
             if (left_int_data == nullptr || right_int_data == nullptr) {
-                return nullptr;
+                throw Error{ErrorType::Internal, "Unsupported type."};
             }
 
             return std::make_unique<Data<bool>>(DataType::Boolean, left_int_data->value < right_int_data->value);
@@ -190,7 +190,7 @@ std::unique_ptr<AbstractData> Expression::Evaluate(const Scope & scope, std::vec
             Data<int> * right_int_data = dynamic_cast<Data<int>*>(right_data);
 
             if (left_int_data == nullptr || right_int_data == nullptr) {
-                return nullptr;
+                throw Error{ErrorType::Internal, "Unsupported type."};
             }
 
             return std::make_unique<Data<int>>(DataType::Integer, left_int_data->value % right_int_data->value);
@@ -199,7 +199,7 @@ std::unique_ptr<AbstractData> Expression::Evaluate(const Scope & scope, std::vec
             Data<int> * right_int_data = dynamic_cast<Data<int>*>(right_data);
 
             if (left_int_data == nullptr || right_int_data == nullptr) {
-                return nullptr;
+                throw Error{ErrorType::Internal, "Unsupported type."};
             }
 
             return std::make_unique<Data<bool>>(DataType::Boolean, left_int_data->value == right_int_data->value);
@@ -208,7 +208,7 @@ std::unique_ptr<AbstractData> Expression::Evaluate(const Scope & scope, std::vec
             Data<int> * right_int_data = dynamic_cast<Data<int>*>(right_data);
 
             if (left_int_data == nullptr || right_int_data == nullptr) {
-                return nullptr;
+                throw Error{ErrorType::Internal, "Unsupported type."};
             }
 
             return std::make_unique<Data<bool>>(DataType::Boolean, left_int_data->value != right_int_data->value);

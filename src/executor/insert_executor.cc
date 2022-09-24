@@ -9,7 +9,7 @@ std::vector<std::vector<AbstractData*>> InsertExecutor::Execute(Catalog * catalo
 
     CatalogTable * table = catalog->ReadTable(plan->table).unwrap();
 
-    if (plan->columns.size() == 0) {        
+    if (plan->columns.size() == 0) {
         for (int i = 0; i < plan->values.size(); i++) {
             if (!table->ValidateRow(plan->values.at(i))) {
                 throw Error{ErrorType::Internal, ""};

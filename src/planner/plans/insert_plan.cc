@@ -9,10 +9,6 @@ InsertPlan::InsertPlan(InsertStatement * ast, Catalog * catalog) : PlanNode{Plan
         for (Expression * value : row) {
             std::unique_ptr<AbstractData> value_constant = value->EvaluateConstant();
 
-            if (!value_constant) {
-                throw Error{ErrorType::Internal, "Error evaluating constant."};
-            }
-
             new_row.push_back(std::move(value_constant));
         }
         new_values.push_back(std::move(new_row));

@@ -346,13 +346,22 @@ Result<Expression*, Error> Parser::ParseExpressionAtom() {
             Expression * res = new Field(from, field);
             return Ok(res);
         }
-        case TokenType::NumberValue:
+        case TokenType::IntegerValue:
         {
             try {
                 Expression * res = new IntegerLiteral{std::stoi(t.unwrap().value)};
                 return Ok(res);
             } catch (...) {
-                return Err(Error{ErrorType::Parse, "Error parsing number value."});
+                return Err(Error{ErrorType::Parse, "Error parsing integer value."});
+            }
+        }
+        case TokenType::DecimalValue:
+        {
+            try {
+                Expression * res = new FloatLiteral{std::stof(t.unwrap().value)};
+                return Ok(res);
+            } catch (...) {
+                return Err(Error{ErrorType::Parse, "Error parsing float value."});
             }
         }
         case TokenType::OpenParen:

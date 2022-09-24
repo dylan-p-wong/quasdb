@@ -21,6 +21,9 @@ std::unique_ptr<AbstractData> Tuple::GetValueAtColumnIndex(int index, const Cata
     } else if (datatype == DataType::Boolean) {
         bool value = *reinterpret_cast<bool*>(GetData() + column->GetColumnOffset());
         return std::make_unique<Data<bool>>(DataType::Boolean, value);
+    } else if (datatype == DataType::Float) {
+        float value = *reinterpret_cast<float*>(GetData() + column->GetColumnOffset());
+        return std::make_unique<Data<float>>(DataType::Float, value);
     }
 
     throw Error{ErrorType::Internal, ""};
@@ -41,6 +44,8 @@ Tuple::Tuple(const std::vector<std::unique_ptr<AbstractData>> & values, const Ca
             memcpy(data + catalog_column->GetColumnOffset(), &dynamic_cast<Data<int>*>(values.at(i).get())->value, catalog_column->GetColumnSize());
         } else if (values.at(i)->type == DataType::Boolean) {
             memcpy(data + catalog_column->GetColumnOffset(), &dynamic_cast<Data<bool>*>(values.at(i).get())->value, catalog_column->GetColumnSize());
+        } else if (values.at(i)->type == DataType::Float) {
+            memcpy(data + catalog_column->GetColumnOffset(), &dynamic_cast<Data<float>*>(values.at(i).get())->value, catalog_column->GetColumnSize());
         } else {
             throw Error{ErrorType::Internal, ""};
         }

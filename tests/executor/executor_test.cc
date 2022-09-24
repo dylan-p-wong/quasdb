@@ -550,3 +550,46 @@ TEST(ExecutorTest, ExecutorSelectTest7) {
   EXPECT_EQ(dynamic_cast<Data<int>*>(res5.rows.at(1).at(1))->value, 5);
   EXPECT_EQ(dynamic_cast<Data<bool>*>(res5.rows.at(1).at(2))->value, false);
 }
+
+TEST(ExecutorTest, ExecutorSelectTest8) {
+  BufferManager * buffer_manager = new BufferManager{};
+  Catalog * catalog = new Catalog{buffer_manager};
+  Planner planner{catalog};
+  Executor e{catalog};
+
+  Parser parser1{"CREATE table test1 (x float, y integer, z float)"};
+  std::unique_ptr<PlanNode> plan1 = planner.CreatePlan(parser1.ParseStatement().unwrap());
+  ExecutionOutput res1 = e.Execute(plan1.get());
+
+  EXPECT_EQ(res1.error, false);
+  EXPECT_EQ(catalog->tables.size(), 1);
+  EXPECT_EQ(catalog->tables.at(0)->GetNumberOfColumns(), 3);
+
+  Parser parser2{"INSERT INTO test1 VALUES (12.88, 1, 324.43)"};
+  std::unique_ptr<PlanNode> plan2 = planner.CreatePlan(parser2.ParseStatement().unwrap());
+  ExecutionOutput res2 = e.Execute(plan2.get());
+  EXPECT_EQ(res2.error, false);
+
+  Parser parser3{"INSERT INTO test1 VALUES (67.456, 5, 435.0)"};
+  std::unique_ptr<PlanNode> plan3 = planner.CreatePlan(parser3.ParseStatement().unwrap());
+  ExecutionOutput res3 = e.Execute(plan3.get());
+  EXPECT_EQ(res3.error, false);
+
+  Parser parser4{"INSERT INTO test1 VALUES (7, 8, 9)"};
+  std::unique_ptr<PlanNode> plan4 = planner.CreatePlan(parser4.ParseStatement().unwrap());
+  ExecutionOutput res4 = e.Execute(plan4.get());
+  EXPECT_EQ(res4.error, true);
+
+  Parser parser5{"SELECT * FROM test1"};
+  std::unique_ptr<PlanNode> plan5 = planner.CreatePlan(parser5.ParseStatement().unwrap());
+  ExecutionOutput res5 = e.Execute(plan5.get());
+  EXPECT_EQ(res5.error, false);
+  EXPECT_EQ(res5.rows.size(), 2);
+  EXPECT_EQ(res5.rows.at(0).size(), 3);
+  EXPECT_FLOAT_EQ(dynamic_cast<Data<float>*>(res5.rows.at(0).at(0))->value, 12.88);
+  EXPECT_FLOAT_EQ(dynamic_cast<Data<int>*>(res5.rows.at(0).at(1))->value, 1);
+  EXPECT_FLOAT_EQ(dynamic_cast<Data<float>*>(res5.rows.at(0).at(2))->value, 324.43);
+  EXPECT_FLOAT_EQ(dynamic_cast<Data<float>*>(res5.rows.at(1).at(0))->value, 67.456);
+  EXPECT_FLOAT_EQ(dynamic_cast<Data<int>*>(res5.rows.at(1).at(1))->value, 5);
+  EXPECT_FLOAT_EQ(dynamic_cast<Data<float>*>(res5.rows.at(1).at(2))->value, 435);
+}

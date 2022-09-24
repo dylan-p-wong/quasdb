@@ -166,7 +166,13 @@ Result<Token, Error> Lexer::ScanIdentifierQuoted() {
 Result<Token, Error> Lexer::ScanNumber() {
     std::string num = NextWhile([](char c) { return isdigit(c) != 0; }).value();
 
-    return Ok(Token{TokenType::NumberValue, num});
+    if (*iter == '.') {
+        ++iter;
+        std::string decimal = NextWhile([](char c) { return isdigit(c) != 0; }).value();
+        return Ok(Token{TokenType::DecimalValue, num + "." + decimal});
+    }
+
+    return Ok(Token{TokenType::IntegerValue, num});
 }
 
 Result<Token, Error> Lexer::ScanString() {

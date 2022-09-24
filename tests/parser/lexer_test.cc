@@ -42,7 +42,7 @@ TEST(LexerTest, LexerSelect2) {
   t = l.Scan().value().unwrap();
   EXPECT_EQ(t.type, TokenType::Equal);
   t = l.Scan().value().unwrap();
-  EXPECT_EQ(t.type, TokenType::NumberValue);
+  EXPECT_EQ(t.type, TokenType::IntegerValue);
   EXPECT_EQ(t.value, "40");
 
   EXPECT_EQ(l.Scan().has_value(), false);
@@ -107,11 +107,26 @@ TEST(LexerTest, LexerScanSymbol) {
 TEST(LexerTest, LexerScanNumber) {
   Lexer l{"9000234234fasdf"};
   Token t = l.Scan().value().unwrap();
-  EXPECT_EQ(t.type, TokenType::NumberValue);
+  EXPECT_EQ(t.type, TokenType::IntegerValue);
   EXPECT_EQ(t.value, "9000234234");
   t = l.Scan().value().unwrap();
   EXPECT_EQ(t.type, TokenType::IdentifierValue);
   EXPECT_EQ(t.value, "fasdf");
+}
+
+TEST(LexerTest, LexerScanDecimal) {
+  Lexer l{"900023.329342 324.234 -34.44"};
+  Token t = l.Scan().value().unwrap();
+  EXPECT_EQ(t.type, TokenType::DecimalValue);
+  EXPECT_EQ(t.value, "900023.329342");
+  t = l.Scan().value().unwrap();
+  EXPECT_EQ(t.type, TokenType::DecimalValue);
+  EXPECT_EQ(t.value, "324.234");
+  t = l.Scan().value().unwrap();
+  EXPECT_EQ(t.type, TokenType::Minus);
+  t = l.Scan().value().unwrap();
+  EXPECT_EQ(t.type, TokenType::DecimalValue);
+  EXPECT_EQ(t.value, "34.44");
 }
 
 TEST(LexerTest, LexerIterator1) {
@@ -128,8 +143,8 @@ TEST(LexerTest, LexerIterator1) {
   EXPECT_EQ(l.Next().unwrap().type, TokenType::IdentifierValue);
   EXPECT_EQ(l.Peek().unwrap().type, TokenType::StringValue);
   EXPECT_EQ(l.Next().unwrap().type, TokenType::StringValue);
-  EXPECT_EQ(l.Peek().unwrap().type, TokenType::NumberValue);
-  EXPECT_EQ(l.Next().unwrap().type, TokenType::NumberValue);
+  EXPECT_EQ(l.Peek().unwrap().type, TokenType::IntegerValue);
+  EXPECT_EQ(l.Next().unwrap().type, TokenType::IntegerValue);
   EXPECT_EQ(l.Peek().unwrap().type, TokenType::Slash);
   EXPECT_EQ(l.Next().unwrap().type, TokenType::Slash);
   EXPECT_EQ(l.Peek().unwrap().type, TokenType::String);
@@ -142,16 +157,33 @@ TEST(LexerTest, LexerIterator1) {
 
 TEST(LexerTest, LexerIterator2) {
   LexerIterator l{"4 * 4 + 7"};
-  EXPECT_EQ(l.Peek().unwrap().type, TokenType::NumberValue);
-  EXPECT_EQ(l.Next().unwrap().type, TokenType::NumberValue);
+  EXPECT_EQ(l.Peek().unwrap().type, TokenType::IntegerValue);
+  EXPECT_EQ(l.Next().unwrap().type, TokenType::IntegerValue);
   EXPECT_EQ(l.Peek().unwrap().type, TokenType::Asterisk);
   EXPECT_EQ(l.Next().unwrap().type, TokenType::Asterisk);
-  EXPECT_EQ(l.Peek().unwrap().type, TokenType::NumberValue);
-  EXPECT_EQ(l.Next().unwrap().type, TokenType::NumberValue);
+  EXPECT_EQ(l.Peek().unwrap().type, TokenType::IntegerValue);
+  EXPECT_EQ(l.Next().unwrap().type, TokenType::IntegerValue);
   EXPECT_EQ(l.Peek().unwrap().type, TokenType::Plus);
   EXPECT_EQ(l.Next().unwrap().type, TokenType::Plus);
-  EXPECT_EQ(l.Peek().unwrap().type, TokenType::NumberValue);
-  EXPECT_EQ(l.Next().unwrap().type, TokenType::NumberValue);
+  EXPECT_EQ(l.Peek().unwrap().type, TokenType::IntegerValue);
+  EXPECT_EQ(l.Next().unwrap().type, TokenType::IntegerValue);
   EXPECT_EQ(l.Peek().isErr(), true);
   EXPECT_EQ(l.Next().isErr(), true);
 }
+
+TEST(LexerTest, LexerIterator3) {
+  LexerIterator l{"4.69 * 4.111 + 7.9349"};
+  EXPECT_EQ(l.Peek().unwrap().type, TokenType::DecimalValue);
+  EXPECT_EQ(l.Next().unwrap().type, TokenType::DecimalValue);
+  EXPECT_EQ(l.Peek().unwrap().type, TokenType::Asterisk);
+  EXPECT_EQ(l.Next().unwrap().type, TokenType::Asterisk);
+  EXPECT_EQ(l.Peek().unwrap().type, TokenType::DecimalValue);
+  EXPECT_EQ(l.Next().unwrap().type, TokenType::DecimalValue);
+  EXPECT_EQ(l.Peek().unwrap().type, TokenType::Plus);
+  EXPECT_EQ(l.Next().unwrap().type, TokenType::Plus);
+  EXPECT_EQ(l.Peek().unwrap().type, TokenType::DecimalValue);
+  EXPECT_EQ(l.Next().unwrap().type, TokenType::DecimalValue);
+  EXPECT_EQ(l.Peek().isErr(), true);
+  EXPECT_EQ(l.Next().isErr(), true);
+}
+

@@ -12,6 +12,7 @@ class CatalogColumn {
     // offset in tuple
     int column_offset;
 public:
+    int size; // bytes
     std::string name;
     bool primary_key;
     bool nullable;
