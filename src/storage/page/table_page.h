@@ -17,8 +17,8 @@ public:
     void Init();
 
     Result<void, Error> InsertTuple(const Tuple &tuple, CatalogTable * catalog_table);
-    // Result<void, Error> DeleteTuple(const RID & rid);
     Result<Tuple*, Error> GetTuple(const RID & rid, const CatalogTable * catalog_table);
+    Result<void, Error> MarkDelete(const RID & rid, const CatalogTable * catalog_table);
 
     int GetTupleCount() {
         return *reinterpret_cast<int*>(GetData() + OFFSET_TUPLE_COUNT);
@@ -37,15 +37,8 @@ public:
     }
 
     // <pointer, tuple_size>
-    std::pair<int, int> GetTupleInfo(int i) {
-        int pointer = *reinterpret_cast<int*>(GetData() + SIZE_TABLE_PAGE_HEADER + SIZE_TUPLE_INFO * i);
-        int size = *reinterpret_cast<int*>(GetData() + SIZE_TABLE_PAGE_HEADER + SIZE_TUPLE_INFO * i + 4);
-        return std::make_pair(pointer, size);
-    }
+    std::pair<int, int> GetTupleInfo(int i);
 
     // <pointer, tuple_size>
-    void SetTupleInfo(int i, std::pair<int, int> info) {
-        memcpy(GetData() + SIZE_TABLE_PAGE_HEADER + SIZE_TUPLE_INFO * i, &info.first, sizeof(int));
-        memcpy(GetData() + SIZE_TABLE_PAGE_HEADER + SIZE_TUPLE_INFO * i + 4, &info.second, sizeof(int));
-    }
+    void SetTupleInfo(int i, std::pair<int, int> info);
 };

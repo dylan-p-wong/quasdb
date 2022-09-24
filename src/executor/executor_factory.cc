@@ -7,6 +7,7 @@
 #include "projection_executor.h"
 #include "filter_executor.h"
 #include "nested_join_executor.h"
+#include "delete_executor.h"
 
 #include "../planner/plans/create_table_plan.h"
 #include "../planner/plans/drop_table_plan.h"
@@ -15,7 +16,7 @@
 #include "../planner/plans/projection_plan.h"
 #include "../planner/plans/filter_plan.h"
 #include "../planner/plans/nested_join_plan.h"
-
+#include "../planner/plans/delete_plan.h"
 
 std::unique_ptr<AbstractExecutor> ExecutorFactory::CreateExecutor(const PlanNode * plan) {
 
@@ -31,6 +32,10 @@ std::unique_ptr<AbstractExecutor> ExecutorFactory::CreateExecutor(const PlanNode
         case PlanType::Insert: {
             const InsertPlan * insert_plan = dynamic_cast<const InsertPlan*>(plan);
             return std::make_unique<InsertExecutor>(insert_plan);
+        }
+        case PlanType::Delete: {
+            const DeletePlan * delete_plan = dynamic_cast<const DeletePlan*>(plan);
+            return std::make_unique<DeleteExecutor>(delete_plan);
         }
         case PlanType::SequentialScan: {
             const SequentialScanPlan * insert_plan = dynamic_cast<const SequentialScanPlan*>(plan);

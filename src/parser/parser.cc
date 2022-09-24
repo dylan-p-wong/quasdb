@@ -762,6 +762,7 @@ Result<Statement*, Error> Parser::ParseUpdate() {
 }
 
 Result<std::vector<SelectItem*>, Error> Parser::ParseSelectClause() {
+    // (TODO) parsing count(), min(), max(), sum(), avg()
     Result<Token, Error> selectToken = NextExpect(TokenType::Select);
 
     if (selectToken.isErr()) {

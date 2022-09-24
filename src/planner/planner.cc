@@ -4,6 +4,7 @@
 #include "../parser/statement/drop_table.h"
 #include "../parser/statement/insert.h"
 #include "../parser/statement/select.h"
+#include "../parser/statement/delete.h"
 
 #include "./plans/create_table_plan.h"
 #include "./plans/drop_table_plan.h"
@@ -12,6 +13,8 @@
 #include "./plans/filter_plan.h"
 #include "./plans/projection_plan.h"
 #include "./plans/nested_join_plan.h"
+#include "./plans/delete_plan.h"
+
 
 std::unique_ptr<PlanNode> Planner::CreatePlan(Statement * ast) {
     switch (ast->type) {
@@ -56,6 +59,22 @@ std::unique_ptr<PlanNode> Planner::CreatePlan(Statement * ast) {
             // build limit clause
             
             // return std::make_unique<SequentialScanPlan>(dynamic_cast<TableFromItem*>(select_statement->from.at(0))->name, catalog);
+            return std::move(node);
+        }
+        case StatementType::Delete: {
+            DeleteStatement * delete_statement = dynamic_cast<DeleteStatement*>(ast);
+
+            // build from clause
+            std::unique_ptr<PlanNode> node = BuildFromNodePlan(new TableFromItem{delete_statement->table, ""});
+
+            // build where clause
+            if (delete_statement->where) {
+                node = std::make_unique<FilterPlan>(node.release(), delete_statement->where, catalog); // should not use release but temp
+            }
+
+            // build delete node
+            node = std::make_unique<DeletePlan>(node.release(), delete_statement->table, catalog);
+
             return std::move(node);
         }
         default:

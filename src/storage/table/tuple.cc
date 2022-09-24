@@ -2,12 +2,9 @@
 #include "tuple.h"
 #include "../catalog/catalog.h"
 
-Tuple::Tuple(const CatalogTable * catalog_table) {
-    // Calculate Size
-    tuple_size = catalog_table->GetLengthOfTuple();
-
-    // Allocate memory
-    data = new char[tuple_size];
+Tuple::Tuple(const char * data_page, const int offset, const int size, const CatalogTable * catalog_table) : tuple_size{size}, data{new char[size]} {
+    // Copy memory over
+    memcpy(data, data_page + offset, tuple_size);
 }
 
 std::unique_ptr<AbstractData> Tuple::GetValueAtColumnIndex(int index, const CatalogTable * catalog_table) {

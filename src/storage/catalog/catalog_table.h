@@ -22,7 +22,7 @@ public:
     // Result<void, Error> GetColumnIndex(std::string name);
     // Result<void, Error> GetPrimaryKey(std::string name);
     bool ValidateTable();
-    bool ValidateRow(const std::vector<std::unique_ptr<AbstractData>> & row); // May need to change to normal pointer
+    bool ValidateRow(const std::vector<std::unique_ptr<AbstractData>> & row);
 
     int GetNumberOfColumns() const {
         return columns.size();
@@ -45,6 +45,7 @@ public:
     Result<void, Error> InsertTuple(const Tuple &tuple, BufferManager * buffer_manager);
     Result<Tuple*, Error> GetTuple(const RID & rid, BufferManager * buffer_manager);
     std::vector<Tuple*> GetTuples(BufferManager * buffer_manager);
+    Result<void, Error> MarkDelete(const RID & rid, BufferManager * buffer_manager);
 
     CatalogTable();
 };

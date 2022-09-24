@@ -25,8 +25,13 @@ Result<void, Error> DirectoryPage::InsertTuple(const Tuple &tuple, BufferManager
 
         TablePage * tp = reinterpret_cast<TablePage*>(buffer_manager->GetPage(GetDataPagePageId(i)));
 
-        if (tp->GetFreeSpace() > tuple.tuple_size) {
-            Result<void, Error> res = tp->InsertTuple(tuple, catalog_table); // still need to handle even though should not error
+        if (tp->GetFreeSpace() > tuple.GetTupleSize()) {
+            Result<void, Error> res = tp->InsertTuple(tuple, catalog_table);
+
+            if (res.isErr()) {
+                return Err(res.unwrapErr());
+            }
+
             SetDataPageFreeSpace(i, tp->GetFreeSpace());
             return res;
         }
@@ -61,4 +66,22 @@ Result<Tuple*, Error> DirectoryPage::GetTuple(const RID &rid, BufferManager * bu
     }
     DirectoryPage * dp = reinterpret_cast<DirectoryPage*>(buffer_manager->GetPage(GetNextDirectoryPageId()));
     return dp->GetTuple(rid, buffer_manager, catalog_table);
+}
+
+Result<void, Error> DirectoryPage::MarkDelete(const RID & rid, BufferManager * buffer_manager, const CatalogTable * catalog_table) {
+    for (int i = 0; i < GetMaxNumberOfDataPages(); i++) {
+        if (GetDataPagePageId(i) == -1) {
+            break;
+        }
+
+        if (GetDataPagePageId(i) == rid.page_number) {
+            TablePage * tp = reinterpret_cast<TablePage*>(buffer_manager->GetPage(rid.page_number));
+            return tp->MarkDelete(rid, catalog_table);
+        }
+    }
+    if (GetNextDirectoryPageId() == -1) {
+        return Err(Error{ErrorType::Internal, ""});
+    }
+    DirectoryPage * dp = reinterpret_cast<DirectoryPage*>(buffer_manager->GetPage(GetNextDirectoryPageId()));
+    return dp->MarkDelete(rid, buffer_manager, catalog_table);
 }

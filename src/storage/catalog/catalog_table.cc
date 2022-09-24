@@ -127,3 +127,12 @@ std::vector<Tuple*> CatalogTable::GetTuples(BufferManager * buffer_manager) {
 
     return res;
 }
+
+Result<void, Error> CatalogTable::MarkDelete(const RID & rid, BufferManager * buffer_manager) {
+    if (first_data_page_directory_page_id == -1) {
+        return Err(Error{ErrorType::Internal, ""});
+    }
+
+    DirectoryPage * dp = reinterpret_cast<DirectoryPage*>(buffer_manager->GetPage(first_data_page_directory_page_id));
+    return dp->MarkDelete(rid, buffer_manager, this);
+}
