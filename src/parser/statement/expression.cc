@@ -217,7 +217,8 @@ std::unique_ptr<AbstractData> Expression::Evaluate(const Scope & scope, std::vec
         }
     } else if (dynamic_cast<const PrefixOperation*>(this)) {
         const PrefixOperation * op = dynamic_cast<const PrefixOperation*>(this);
-        auto p = op->Evaluate(scope, row);
+
+        auto p = op->e->Evaluate(scope, row);
 
         if (type == ExpressionType::Assert) {
             Data<int> * data = dynamic_cast<Data<int>*>(p.get());
@@ -226,7 +227,7 @@ std::unique_ptr<AbstractData> Expression::Evaluate(const Scope & scope, std::vec
                 throw Error{ErrorType::Internal, ""};
             }
 
-            return std::make_unique<Data<bool>>(DataType::Integer, data->value);
+            return std::make_unique<Data<int>>(DataType::Integer, data->value);
         } else if (type == ExpressionType::Negate) {
             Data<int> * data = dynamic_cast<Data<int>*>(p.get());
 
@@ -234,7 +235,7 @@ std::unique_ptr<AbstractData> Expression::Evaluate(const Scope & scope, std::vec
                 throw Error{ErrorType::Internal, ""};
             }
 
-            return std::make_unique<Data<bool>>(DataType::Integer, data->value * -1);
+            return std::make_unique<Data<int>>(DataType::Integer, data->value * -1);
         } else if (type == ExpressionType::Not) {
             return std::make_unique<Data<bool>>(DataType::Boolean, !p->IsTruthy());
         } else {
@@ -275,6 +276,8 @@ std::unique_ptr<AbstractData> Expression::Evaluate(const Scope & scope, std::vec
             return std::make_unique<Data<int>>(DataType::Integer, dynamic_cast<Data<int>*>(d)->value); 
         } else if (d->type == DataType::Boolean) {
             return std::make_unique<Data<bool>>(DataType::Boolean, dynamic_cast<Data<bool>*>(d)->value); 
+        } else if (d->type == DataType::Float) {
+            return std::make_unique<Data<bool>>(DataType::Float, dynamic_cast<Data<float>*>(d)->value); 
         } else {
             throw Error{ErrorType::Internal, "Unsupported type."};
         }

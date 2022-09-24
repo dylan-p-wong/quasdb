@@ -47,3 +47,19 @@ TEST(ExpressionTest, ExpressionEvaluateSubtraction1) {
   EXPECT_EQ(s.unwrap()->EvaluateConstant().get()->type, DataType::Integer);
   EXPECT_EQ(dynamic_cast<const Data<int>*>(s.unwrap()->EvaluateConstant().get())->value, 1);
 }
+
+TEST(ParserTest, ExpressionEvaluateNegate1) {
+  Parser p{"-1"};
+  auto s = p.ParseExpression(0);
+  EXPECT_EQ(s.isOk(), true);
+  EXPECT_EQ(s.unwrap()->type, ExpressionType::Negate);
+  EXPECT_EQ(s.unwrap()->Display(), "NEGATE(1)");
+  EXPECT_EQ(dynamic_cast<const Data<int>*>(s.unwrap()->EvaluateConstant().get())->value, -1);
+}
+
+TEST(ParserTest, ExpressionEvaluateBasic1) {
+  Parser p{"1"};
+  auto s = p.ParseExpression(0);
+  EXPECT_EQ(s.isOk(), true);
+  EXPECT_EQ(dynamic_cast<const Data<int>*>(s.unwrap()->EvaluateConstant().get())->value, 1);
+}

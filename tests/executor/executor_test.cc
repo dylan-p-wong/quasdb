@@ -532,7 +532,7 @@ TEST(ExecutorTest, ExecutorSelectTest7) {
   ExecutionOutput res3 = e.Execute(plan3.get());
   EXPECT_EQ(res3.error, false);
 
-  Parser parser4{"INSERT INTO test1 VALUES (7, 8, 9)"};
+  Parser parser4{"INSERT INTO test1 VALUES (-7, 8, 9)"};
   std::unique_ptr<PlanNode> plan4 = planner.CreatePlan(parser4.ParseStatement().unwrap());
   ExecutionOutput res4 = e.Execute(plan4.get());
   EXPECT_EQ(res4.error, true);
