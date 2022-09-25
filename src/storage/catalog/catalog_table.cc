@@ -3,11 +3,11 @@
 
 #include "catalog_table.h"
 
-CatalogTable::CatalogTable() {}
+CatalogTable::CatalogTable(std::string name, std::vector<CatalogColumn*> columns, int tuple_size) : name{name}, columns{columns}, tuple_size{tuple_size} {}
 
 Result<CatalogColumn*, Error> CatalogTable::GetColumn(const std::string & name) {
     for (CatalogColumn * column : columns) {
-        if (column->name == name) {
+        if (column->GetColumnName() == name) {
             return Ok(column);
         }
     }
@@ -19,8 +19,8 @@ std::vector<std::pair<std::string, std::string>> CatalogTable::GetReferences() {
     std::vector<std::pair<std::string, std::string>> res;
 
     for (CatalogColumn * column : columns) {
-        if (column->references.has_value()) {
-            res.push_back(column->references.value());
+        if (column->GetReferences().has_value()) {
+            res.push_back(column->GetReferences().value());
         }
     }
 
@@ -32,10 +32,10 @@ bool CatalogTable::ValidateTable() {
 
     // Duplicate column names
     for (CatalogColumn * column : columns) {
-        if (column_names.find(column->name) != column_names.end()) {
+        if (column_names.find(column->GetColumnName()) != column_names.end()) {
             return false;
         }
-        column_names.insert(column->name);
+        column_names.insert(column->GetColumnName());
     }
 
     for (CatalogColumn * column : columns) {

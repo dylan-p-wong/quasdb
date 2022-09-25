@@ -9,10 +9,7 @@
 
 class CatalogColumn {
     DataType datatype;
-    // offset in tuple
-    int column_offset;
-public:
-    int size; // bytes
+    int column_offset; // offset in tuple
     std::string name;
     bool primary_key;
     bool nullable = true;
@@ -20,6 +17,9 @@ public:
     bool unique;
     bool index;
     std::optional<std::pair<std::string, std::string>> references; // table.field
+    int size; // varchar only (length)
+public:
+
     CatalogColumn(const Column & statement_column, int column_offset);
 
     // validation
@@ -37,5 +37,29 @@ public:
 
     DataType GetColumnDataType() {
         return datatype;
+    }
+
+    std::optional<std::pair<std::string, std::string>> GetReferences() {
+        return references;
+    }
+
+    bool GetPrimaryKey() {
+        return primary_key;
+    }
+
+    bool GetNullable() {
+        return nullable;
+    }
+
+    AbstractData * GetDefaultValue() {
+        return default_value == nullptr ? nullptr : default_value.get();
+    }
+
+    bool GetUnique() {
+        return unique;
+    }
+
+    bool GetIndex() {
+        return index;
     }
 };

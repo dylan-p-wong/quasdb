@@ -27,7 +27,7 @@ Result<void, Error> TablePage::InsertTuple(const Tuple &tuple, CatalogTable * ca
 
     // create null bit map
     std::bitset<16> null_bit_map;
-    for (int i = 0; i < catalog_table->columns.size(); i++) {
+    for (int i = 0; i < catalog_table->GetNumberOfColumns(); i++) {
         if (tuple.GetValueAtColumnIndex(i, catalog_table)->type == DataType::Null) {
             null_bit_map.set(i, true);
         }

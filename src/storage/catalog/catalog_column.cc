@@ -8,7 +8,8 @@ CatalogColumn::CatalogColumn(const Column &statement_column, int column_offset) 
                                                                unique{statement_column.unique},
                                                                index{statement_column.index},
                                                                references{statement_column.references},
-                                                               column_offset{column_offset} {}
+                                                               column_offset{column_offset},
+                                                               size{statement_column.size} {}
 
 bool CatalogColumn::ValidateColumn() {
     if (primary_key == true && (nullable == true || unique == false)) {
@@ -32,13 +33,13 @@ bool CatalogColumn::ValidateValue(AbstractData * value) {
 
 int CatalogColumn::GetColumnSize() {
     if (datatype == DataType::Boolean) {
-        return 1; // temp
+        return 1;
     } else if (datatype == DataType::Float) {
-        return 8; // temp need to change
+        return 8;
     } else if (datatype == DataType::Integer) {
         return 4;
     } else if (datatype == DataType::Varchar) {
-        return 4; // temp need to change
+        return size;
     }
     throw;
 }

@@ -44,7 +44,7 @@ TEST(ParserTest, ParserBasicCreateTable) {
 }
 
 TEST(ParserTest, ParserBasicCreateTable2) {
-  Parser p{"CREATE TABLE testing (x integer, y varchar)"};
+  Parser p{"CREATE TABLE testing (x integer, y varchar(12))"};
   auto s = p.ParseStatement();
   EXPECT_EQ(s.isOk(), true);
   EXPECT_EQ(s.unwrap()->type, StatementType::CreateTable);
@@ -56,7 +56,7 @@ TEST(ParserTest, ParserBasicCreateTable2) {
 }
 
 TEST(ParserTest, ParserBasicCreateTable3) {
-  Parser p{"CREATE TABLE testing (x integer PRIMARY KEY UNIQUE, y varchar)"};
+  Parser p{"CREATE TABLE testing (x integer PRIMARY KEY UNIQUE, y varchar(13))"};
   auto s = p.ParseStatement();
   EXPECT_EQ(s.isOk(), true);
   EXPECT_EQ(s.unwrap()->type, StatementType::CreateTable);
@@ -68,7 +68,7 @@ TEST(ParserTest, ParserBasicCreateTable3) {
 }
 
 TEST(ParserTest, ParserBasicCreateTable4) {
-  Parser p{"CREATE TABLE testing (x integer FOREIGN KEY REFERENCES derp(x), y varchar)"};
+  Parser p{"CREATE TABLE testing (x integer FOREIGN KEY REFERENCES derp(x), y varchar(13))"};
   auto s = p.ParseStatement();
   EXPECT_EQ(s.isOk(), true);
   EXPECT_EQ(s.unwrap()->type, StatementType::CreateTable);

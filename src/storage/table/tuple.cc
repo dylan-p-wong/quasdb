@@ -12,7 +12,7 @@ std::unique_ptr<AbstractData> Tuple::GetValueAtColumnIndex(int index, const Cata
         return nullptr;
     }
 
-    CatalogColumn * column = catalog_table->columns.at(index);
+    CatalogColumn * column = catalog_table->GetColumn(index);
     DataType datatype = column->GetColumnDataType();
 
     if (null_bit_map[index] == true) {

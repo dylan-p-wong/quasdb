@@ -18,6 +18,7 @@ struct Column {
     bool unique = false;
     bool index = false;
     std::optional<std::pair<std::string, std::string>> references; // table.field
+    int size = 0; // for varchar
 };
 
 class CreateTable : public Statement {

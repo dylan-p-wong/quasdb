@@ -11,17 +11,23 @@
 #include "../page/directory_page.h"
 
 class CatalogTable {
-public:
     int tuple_size = 0;
-    // For pinning first page on initiliazation
-    int first_data_page_directory_page_id = -1;
+    int first_data_page_directory_page_id = -1; // For pinning first page on initiliazation
     std::string name;
     std::vector<CatalogColumn*> columns;
+public:
     Result<CatalogColumn*, Error> GetColumn(const std::string & name);
     std::vector<std::pair<std::string, std::string>> GetReferences();
     bool ValidateTable();
     bool ValidateRow(const std::vector<std::unique_ptr<AbstractData>> & row);
 
+    std::vector<CatalogColumn*> GetColumns() {
+        return columns;
+    }
+
+    std::string GetTableName() {
+        return name;
+    }
     int GetNumberOfColumns() const {
         return columns.size();
     }
@@ -45,5 +51,5 @@ public:
     std::vector<Tuple*> GetTuples(BufferManager * buffer_manager);
     Result<void, Error> MarkDelete(const RID & rid, BufferManager * buffer_manager);
 
-    CatalogTable();
+    CatalogTable(std::string name, std::vector<CatalogColumn*> columns, int tuple_size);
 };

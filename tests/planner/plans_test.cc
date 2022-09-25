@@ -19,17 +19,17 @@ TEST(PlansTest, PlansCreateTableTest1) {
   const DropTablePlan * drop_table_plan = dynamic_cast<const DropTablePlan*>(plan.get());
   EXPECT_EQ(drop_table_plan, nullptr);
 
-  EXPECT_EQ(create_table_plan->table->name, "test");
+  EXPECT_EQ(create_table_plan->table->GetTableName(), "test");
 
-  std::vector<CatalogColumn*> columns = create_table_plan->table->columns;
+  std::vector<CatalogColumn*> columns = create_table_plan->table->GetColumns();
 
   EXPECT_EQ(columns.size(), 1);
-  EXPECT_EQ(columns.at(0)->name, "x");
-  EXPECT_EQ(columns.at(0)->primary_key, false);
-  EXPECT_EQ(columns.at(0)->nullable, true);
-  EXPECT_EQ(columns.at(0)->default_value, nullptr);
-  EXPECT_EQ(columns.at(0)->unique, false);
-  EXPECT_EQ(columns.at(0)->index, false);
+  EXPECT_EQ(columns.at(0)->GetColumnName(), "x");
+  EXPECT_EQ(columns.at(0)->GetPrimaryKey(), false);
+  EXPECT_EQ(columns.at(0)->GetNullable(), true);
+  EXPECT_EQ(columns.at(0)->GetDefaultValue(), nullptr);
+  EXPECT_EQ(columns.at(0)->GetUnique(), false);
+  EXPECT_EQ(columns.at(0)->GetIndex(), false);
   EXPECT_EQ(create_table_plan->table->GetReferences().size(), 0);
 }
 

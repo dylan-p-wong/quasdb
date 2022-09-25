@@ -14,7 +14,7 @@ Result<void, Error> Catalog::CreateTable(CatalogTable * table) {
 
     // Duplicate table name
     for (CatalogTable * existing_table : tables) {
-        if (existing_table->name == table->name) {
+        if (existing_table->GetTableName() == table->GetTableName()) {
             return Err(Error{ErrorType::Internal, "Table with name already exists."});
         }
     }
@@ -24,9 +24,9 @@ Result<void, Error> Catalog::CreateTable(CatalogTable * table) {
         bool found = false;
 
         for (CatalogTable * existing_table : tables) {
-            if (existing_table->name == reference.first) {
-                for (CatalogColumn * column : existing_table->columns) {
-                    if (column->name == reference.second) {
+            if (existing_table->GetTableName() == reference.first) {
+                for (CatalogColumn * column : existing_table->GetColumns()) {
+                    if (column->GetColumnName() == reference.second) {
                         found = true;
                     }
                 }
@@ -47,7 +47,7 @@ Result<void, Error> Catalog::DeleteTable(const std::string & table_name) {
     for (int i = 0; i < tables.size(); i++) {
         CatalogTable * existing_table = tables.at(i);
 
-        if (existing_table->name == table_name) {
+        if (existing_table->GetTableName() == table_name) {
             tables.erase(tables.begin() + i);
             return Ok();
         }
@@ -58,7 +58,7 @@ Result<void, Error> Catalog::DeleteTable(const std::string & table_name) {
 
 Result<CatalogTable*, Error> Catalog::ReadTable(const std::string & table_name) {
     for (CatalogTable * existing_table : tables) {
-        if (existing_table->name == table_name) {
+        if (existing_table->GetTableName() == table_name) {
             return Ok(existing_table);
         }
     }

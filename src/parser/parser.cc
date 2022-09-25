@@ -162,6 +162,22 @@ Result<Column, Error> Parser::ParseColumn() {
         c.data_type = DataType::Boolean;
     } else if (typeToken.value().type == TokenType::Varchar) {
         c.data_type = DataType::Varchar;
+
+        if (NextExpect(TokenType::OpenParen).isErr()) {
+            return Err(Error{ErrorType::Parse, "Expected token ( but found another."});
+        }
+
+        Result<Token, Error> integerToken = NextExpect(TokenType::IntegerValue);
+
+        if (integerToken.isErr()) {
+            return Err(integerToken.unwrapErr());
+        }
+
+        c.size = std::stoi(integerToken.unwrap().value);
+
+        if (NextExpect(TokenType::CloseParen).isErr()) {
+            return Err(Error{ErrorType::Parse, "Expected token ) but found another."});
+        }
     } else {
         return Err(Error{ErrorType::Parse, "Expected token but found another."});
     }
