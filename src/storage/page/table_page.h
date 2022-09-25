@@ -7,12 +7,21 @@
 #include "../../common/error.h"
 #include "../catalog/catalog_table.h"
 
+// [offset, tuple_size, null_bit_map]
+class TupleInfo {
+public:
+    std::bitset<16> null_bit_map;
+    int offset;
+    int tuple_size;
+    TupleInfo(std::bitset<16> null_bit_map, int offset, int tuple_size) : null_bit_map{null_bit_map}, offset{offset}, tuple_size{tuple_size} {}
+};
+
 // [page id, free space pointer, tuple count, tuple1 offset, ...]
 class TablePage : public Page {
     static constexpr int SIZE_TABLE_PAGE_HEADER = 12;
     static constexpr int OFFSET_FREE_SPACE_POINTER = 4;
     static constexpr int OFFSET_TUPLE_COUNT = 8;
-    static constexpr int SIZE_TUPLE_INFO = 8;
+    static constexpr int SIZE_TUPLE_INFO = 10;
 public:
     void Init();
 
@@ -37,8 +46,8 @@ public:
     }
 
     // <pointer, tuple_size>
-    std::pair<int, int> GetTupleInfo(int i);
+    TupleInfo GetTupleInfo(int i);
 
     // <pointer, tuple_size>
-    void SetTupleInfo(int i, std::pair<int, int> info);
+    void SetTupleInfo(int i, TupleInfo info);
 };

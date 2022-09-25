@@ -2,18 +2,22 @@
 #include "tuple.h"
 #include "../catalog/catalog.h"
 
-Tuple::Tuple(const char * data_page, const int offset, const int size, const CatalogTable * catalog_table) : tuple_size{size}, data{new char[size]} {
+Tuple::Tuple(const char * data_page, std::bitset<16> null_bit_map, const int offset, const int size, const CatalogTable * catalog_table) : null_bit_map{null_bit_map}, tuple_size{size}, data{new char[size]} {
     // Copy memory over
     memcpy(data, data_page + offset, tuple_size);
 }
 
-std::unique_ptr<AbstractData> Tuple::GetValueAtColumnIndex(int index, const CatalogTable * catalog_table) {
+std::unique_ptr<AbstractData> Tuple::GetValueAtColumnIndex(int index, const CatalogTable * catalog_table) const {
     if (index >= catalog_table->GetNumberOfColumns()) {
         return nullptr;
     }
 
     CatalogColumn * column = catalog_table->columns.at(index);
     DataType datatype = column->GetColumnDataType();
+
+    if (null_bit_map[index] == true) {
+        return std::make_unique<Data<int>>(DataType::Null, 0);
+    }
 
     if (datatype == DataType::Integer) {
         int value = *reinterpret_cast<int*>(GetData() + column->GetColumnOffset());
@@ -46,6 +50,8 @@ Tuple::Tuple(const std::vector<std::unique_ptr<AbstractData>> & values, const Ca
             memcpy(data + catalog_column->GetColumnOffset(), &dynamic_cast<Data<bool>*>(values.at(i).get())->value, catalog_column->GetColumnSize());
         } else if (values.at(i)->type == DataType::Float) {
             memcpy(data + catalog_column->GetColumnOffset(), &dynamic_cast<Data<float>*>(values.at(i).get())->value, catalog_column->GetColumnSize());
+        } else if (values.at(i)->type == DataType::Null) {
+            null_bit_map.set(i, true);
         } else {
             throw Error{ErrorType::Internal, ""};
         }

@@ -85,13 +85,13 @@ TEST(ExecutorTest, ExecutorInsertTest1) {
   EXPECT_EQ(buffer_manager->next_page_id, 2);
   DirectoryPage * dp = reinterpret_cast<DirectoryPage*>(buffer_manager->GetPage(0));
   EXPECT_EQ(dp->GetDataPagePageId(0), 1);
-  EXPECT_EQ(dp->GetDataPageFreeSpace(0), 4068);
+  EXPECT_EQ(dp->GetDataPageFreeSpace(0), 4066);
 
   TablePage * tp = reinterpret_cast<TablePage*>(buffer_manager->GetPage(1));
   EXPECT_EQ(tp->GetTupleCount(), 1);
-  EXPECT_EQ(tp->GetFreeSpace(), 4068);
-  EXPECT_EQ(tp->GetTupleInfo(0).first, 4088);
-  EXPECT_EQ(tp->GetTupleInfo(0).second, 8);
+  EXPECT_EQ(tp->GetFreeSpace(), 4066);
+  EXPECT_EQ(tp->GetTupleInfo(0).offset, 4088);
+  EXPECT_EQ(tp->GetTupleInfo(0).tuple_size, 8);
   EXPECT_EQ(*reinterpret_cast<int*>(tp->GetData() + 4088), 8);
   EXPECT_EQ(*reinterpret_cast<int*>(tp->GetData() + 4088 + 4), 49);
 
@@ -114,7 +114,7 @@ TEST(ExecutorTest, ExecutorInsertTest2) {
   Planner planner{catalog};
   Executor e{catalog};
 
-  Parser parser1{"CREATE table test (x integer, y integer)"};
+  Parser parser1{"CREATE table test (x integer, y integer not null)"};
   std::unique_ptr<PlanNode> plan1 = planner.CreatePlan(parser1.ParseStatement().unwrap());
   ExecutionOutput res1 = e.Execute(plan1.get());
 
@@ -169,17 +169,11 @@ TEST(ExecutorTest, ExecutorSelectTest1) {
   ExecutionOutput res4 = e.Execute(plan4.get());
   EXPECT_EQ(res4.error, false);
 
-  // Parser parser5{"SELECT * FROM test"};
-  // std::unique_ptr<PlanNode> plan5 = planner.CreatePlan(parser5.ParseStatement().unwrap());
-  // ExecutionOutput res5 = e.Execute(plan5.get());
-  // EXPECT_EQ(res5.error, false);
-
   auto tuple1 = catalog->tables.at(0)->GetTuple(RID{1, 0}, buffer_manager).unwrap();
   auto data1 = tuple1->GetValueAtColumnIndex(0, catalog->tables.at(0));
   EXPECT_EQ(data1->type, DataType::Integer);
   Data<int> * int_data1 = dynamic_cast<Data<int>*>(data1.get());
   EXPECT_EQ(int_data1->value, 1);
-
   
   EXPECT_EQ((dynamic_cast<Data<int>*>((catalog->tables.at(0)->GetTuple(RID{1, 0}, buffer_manager).unwrap()->GetValueAtColumnIndex(1, catalog->tables.at(0))).get()))->value, 2);
   EXPECT_EQ((dynamic_cast<Data<int>*>((catalog->tables.at(0)->GetTuple(RID{1, 1}, buffer_manager).unwrap()->GetValueAtColumnIndex(0, catalog->tables.at(0))).get()))->value, 3);
@@ -592,4 +586,54 @@ TEST(ExecutorTest, ExecutorSelectTest8) {
   EXPECT_FLOAT_EQ(dynamic_cast<Data<float>*>(res5.rows.at(1).at(0))->value, 67.456);
   EXPECT_FLOAT_EQ(dynamic_cast<Data<int>*>(res5.rows.at(1).at(1))->value, 5);
   EXPECT_FLOAT_EQ(dynamic_cast<Data<float>*>(res5.rows.at(1).at(2))->value, 435);
+}
+
+
+TEST(ExecutorTest, ExecutorSelectTest9) {
+  BufferManager * buffer_manager = new BufferManager{};
+  Catalog * catalog = new Catalog{buffer_manager};
+  Planner planner{catalog};
+  Executor e{catalog};
+
+  Parser parser1{"CREATE table test1 (x float, y integer, z float)"};
+  std::unique_ptr<PlanNode> plan1 = planner.CreatePlan(parser1.ParseStatement().unwrap());
+  ExecutionOutput res1 = e.Execute(plan1.get());
+
+  EXPECT_EQ(res1.error, false);
+  EXPECT_EQ(catalog->tables.size(), 1);
+  EXPECT_EQ(catalog->tables.at(0)->GetNumberOfColumns(), 3);
+
+  Parser parser2{"INSERT INTO test1 VALUES (12.88, 1, null)"};
+  std::unique_ptr<PlanNode> plan2 = planner.CreatePlan(parser2.ParseStatement().unwrap());
+  ExecutionOutput res2 = e.Execute(plan2.get());
+  EXPECT_EQ(res2.error, false);
+
+  Parser parser3{"INSERT INTO test1 VALUES (67.456, null, 435.0)"};
+  std::unique_ptr<PlanNode> plan3 = planner.CreatePlan(parser3.ParseStatement().unwrap());
+  ExecutionOutput res3 = e.Execute(plan3.get());
+  EXPECT_EQ(res3.error, false);
+
+  Parser parser4{"INSERT INTO test1 VALUES (null, 8, 9.88)"};
+  std::unique_ptr<PlanNode> plan4 = planner.CreatePlan(parser4.ParseStatement().unwrap());
+  ExecutionOutput res4 = e.Execute(plan4.get());
+  EXPECT_EQ(res4.error, false);
+
+  Parser parser5{"SELECT * FROM test1"};
+  std::unique_ptr<PlanNode> plan5 = planner.CreatePlan(parser5.ParseStatement().unwrap());
+  ExecutionOutput res5 = e.Execute(plan5.get());
+  EXPECT_EQ(res5.error, false);
+  EXPECT_EQ(res5.rows.size(), 3);
+  EXPECT_EQ(res5.rows.at(0).size(), 3);
+
+  EXPECT_FLOAT_EQ(dynamic_cast<Data<float>*>(res5.rows.at(0).at(0))->value, 12.88);
+  EXPECT_FLOAT_EQ(dynamic_cast<Data<int>*>(res5.rows.at(0).at(1))->value, 1);
+  EXPECT_EQ(res5.rows.at(0).at(2)->type, DataType::Null);
+
+  EXPECT_FLOAT_EQ(dynamic_cast<Data<float>*>(res5.rows.at(1).at(0))->value, 67.456);
+  EXPECT_EQ(res5.rows.at(1).at(1)->type, DataType::Null);
+  EXPECT_FLOAT_EQ(dynamic_cast<Data<float>*>(res5.rows.at(1).at(2))->value, 435);
+
+  EXPECT_EQ(res5.rows.at(2).at(0)->type, DataType::Null);
+  EXPECT_FLOAT_EQ(dynamic_cast<Data<int>*>(res5.rows.at(2).at(1))->value, 8);
+  EXPECT_FLOAT_EQ(dynamic_cast<Data<float>*>(res5.rows.at(2).at(2))->value, 9.88);
 }

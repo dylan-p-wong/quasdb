@@ -21,7 +21,7 @@ std::vector<std::vector<AbstractData*>> InsertExecutor::Execute(Catalog * catalo
             auto tuple_res = table->InsertTuple(t, catalog->buffer_manager);
 
             if (tuple_res.isErr()) {
-                throw Error{ErrorType::Internal, ""};
+                throw tuple_res.unwrapErr();
             }
         }
         

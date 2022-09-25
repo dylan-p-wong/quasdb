@@ -22,7 +22,7 @@ bool CatalogColumn::ValidateColumn() {
 
 bool CatalogColumn::ValidateValue(AbstractData * value) {
     // wrong datatype
-    if (datatype != value->type || (value->type == DataType::Null && !nullable)) {
+    if (datatype != value->type && !(value->type == DataType::Null && nullable)) {
         return false;
     }
     // unique still need

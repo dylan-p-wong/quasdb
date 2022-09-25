@@ -15,7 +15,7 @@ public:
     int size; // bytes
     std::string name;
     bool primary_key;
-    bool nullable;
+    bool nullable = true;
     std::unique_ptr<AbstractData> default_value;
     bool unique;
     bool index;

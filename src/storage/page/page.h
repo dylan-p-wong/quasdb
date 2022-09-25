@@ -4,10 +4,9 @@
 #include "../../common/config.h"
 
 class Page {
-public:
     bool is_dirty = false;
     char data[PAGE_SIZE]{};
-
+public:
     Page(int page_id);
     char * GetData() {
         return data;
