@@ -26,6 +26,10 @@ bool CatalogColumn::ValidateValue(AbstractData * value) {
     if (datatype != value->type && !(value->type == DataType::Null && nullable)) {
         return false;
     }
+
+    if (value->type == DataType::Varchar && dynamic_cast<Data<std::string>*>(value)->value.size() > GetColumnSize()) {
+        return false;
+    }
     // unique still need
     // references still need
     return true;

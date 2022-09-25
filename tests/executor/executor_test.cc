@@ -595,17 +595,60 @@ TEST(ExecutorTest, ExecutorSelectTest9) {
   Planner planner{catalog};
   Executor e{catalog};
 
-  Parser parser1{"CREATE table test1 (x varchar(40), y integer, z varchar(90))"};
+  Parser parser1{"CREATE table test1 (x varchar(4), y integer, z varchar(90))"};
   std::unique_ptr<PlanNode> plan1 = planner.CreatePlan(parser1.ParseStatement().unwrap());
   ExecutionOutput res1 = e.Execute(plan1.get());
 
-  // EXPECT_EQ(res1.error, false);
-  // EXPECT_EQ(catalog->GetTables().size(), 1);
-  // EXPECT_EQ(catalog->GetTables().at(0)->GetNumberOfColumns(), 3);
+  EXPECT_EQ(res1.error, false);
+  EXPECT_EQ(catalog->GetTables().size(), 1);
+  EXPECT_EQ(catalog->GetTables().at(0)->GetNumberOfColumns(), 3);
 
-  // Parser parser2{"INSERT INTO test1 VALUES (12.88, 1, null)"};
-  // std::unique_ptr<PlanNode> plan2 = planner.CreatePlan(parser2.ParseStatement().unwrap());
-  // ExecutionOutput res2 = e.Execute(plan2.get());
-  // EXPECT_EQ(res2.error, false);
+  Parser parser2{"INSERT INTO test1 VALUES ('test', 1, 'man what')"};
+  std::unique_ptr<PlanNode> plan2 = planner.CreatePlan(parser2.ParseStatement().unwrap());
+  ExecutionOutput res2 = e.Execute(plan2.get());
+  EXPECT_EQ(res2.error, false);
+
+  Parser parser3{"INSERT INTO test1 VALUES ('nas', 1, 'jay z what')"};
+  std::unique_ptr<PlanNode> plan3 = planner.CreatePlan(parser3.ParseStatement().unwrap());
+  ExecutionOutput res3 = e.Execute(plan3.get());
+  EXPECT_EQ(res3.error, false);
+
+  Parser parser5{"SELECT * FROM test1"};
+  std::unique_ptr<PlanNode> plan5 = planner.CreatePlan(parser5.ParseStatement().unwrap());
+  ExecutionOutput res5 = e.Execute(plan5.get());
+  EXPECT_EQ(res5.error, false);
+  EXPECT_EQ(res5.rows.size(), 2);
+  EXPECT_EQ(res5.rows.at(0).size(), 3);
+  EXPECT_EQ(dynamic_cast<Data<std::string>*>(res5.rows.at(0).at(0))->value, "test");
+  EXPECT_FLOAT_EQ(dynamic_cast<Data<int>*>(res5.rows.at(0).at(1))->value, 1);
+  EXPECT_EQ(dynamic_cast<Data<std::string>*>(res5.rows.at(0).at(2))->value, "man what");
+  EXPECT_EQ(dynamic_cast<Data<std::string>*>(res5.rows.at(1).at(0))->value, "nas");
+  EXPECT_FLOAT_EQ(dynamic_cast<Data<int>*>(res5.rows.at(1).at(1))->value, 1);
+  EXPECT_EQ(dynamic_cast<Data<std::string>*>(res5.rows.at(1).at(2))->value, "jay z what");
+
+  Parser parser4{"INSERT INTO test1 VALUES ('asdfghasdfasdfghasdfasdfghasdfasdfghasda', 1, '')"};
+  std::unique_ptr<PlanNode> plan4 = planner.CreatePlan(parser4.ParseStatement().unwrap());
+  ExecutionOutput res4 = e.Execute(plan4.get());
+  EXPECT_EQ(res4.error, true);
+
+  Parser parser6{"INSERT INTO test1 VALUES ('bbbb', 7, null)"};
+  std::unique_ptr<PlanNode> plan6 = planner.CreatePlan(parser6.ParseStatement().unwrap());
+  ExecutionOutput res6 = e.Execute(plan6.get());
+  EXPECT_EQ(res6.error, false);
+
+  Parser parser7{"INSERT INTO test1 VALUES ('a', 1, '')"};
+  std::unique_ptr<PlanNode> plan7 = planner.CreatePlan(parser7.ParseStatement().unwrap());
+  ExecutionOutput res7 = e.Execute(plan7.get());
+  EXPECT_EQ(res7.error, false);
+
+  res5 = e.Execute(plan5.get());
+  EXPECT_EQ(res5.error, false);
+  EXPECT_EQ(res5.rows.size(), 4);
+  EXPECT_EQ(res5.rows.at(0).size(), 3);
+  EXPECT_EQ(dynamic_cast<Data<std::string>*>(res5.rows.at(2).at(0))->value, "bbbb");
+  EXPECT_FLOAT_EQ(dynamic_cast<Data<int>*>(res5.rows.at(2).at(1))->value, 7);
+  EXPECT_EQ(res5.rows.at(2).at(2)->type, DataType::Null);
+  EXPECT_EQ(dynamic_cast<Data<std::string>*>(res5.rows.at(3).at(0))->value, "a");
+  EXPECT_FLOAT_EQ(dynamic_cast<Data<int>*>(res5.rows.at(3).at(1))->value, 1);
+  EXPECT_EQ(dynamic_cast<Data<std::string>*>(res5.rows.at(3).at(2))->value, "");
 }
-

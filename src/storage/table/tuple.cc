@@ -28,6 +28,11 @@ std::unique_ptr<AbstractData> Tuple::GetValueAtColumnIndex(int index, const Cata
     } else if (datatype == DataType::Float) {
         float value = *reinterpret_cast<float*>(GetData() + column->GetColumnOffset());
         return std::make_unique<Data<float>>(DataType::Float, value);
+    } else if (datatype == DataType::Varchar) {
+        char char_string[256]{};
+        memcpy(char_string, GetData() + column->GetColumnOffset(), column->GetColumnSize());
+        std::string res = char_string;
+        return std::make_unique<Data<std::string>>(DataType::Varchar, res);
     }
 
     throw Error{ErrorType::Internal, ""};
@@ -52,6 +57,8 @@ Tuple::Tuple(const std::vector<std::unique_ptr<AbstractData>> & values, const Ca
             memcpy(data + catalog_column->GetColumnOffset(), &dynamic_cast<Data<float>*>(values.at(i).get())->value, catalog_column->GetColumnSize());
         } else if (values.at(i)->type == DataType::Null) {
             null_bit_map.set(i, true);
+        } else if (values.at(i)->type == DataType::Varchar) {
+            memcpy(data + catalog_column->GetColumnOffset(), &dynamic_cast<Data<std::string>*>(values.at(i).get())->value, catalog_column->GetColumnSize());
         } else {
             throw Error{ErrorType::Internal, ""};
         }

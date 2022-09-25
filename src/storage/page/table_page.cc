@@ -64,12 +64,7 @@ TupleInfo TablePage::GetTupleInfo(int i) {
 void TablePage::SetTupleInfo(int i, TupleInfo info) {
     memcpy(GetData() + SIZE_TABLE_PAGE_HEADER + SIZE_TUPLE_INFO * i, &info.offset, sizeof(int));
     memcpy(GetData() + SIZE_TABLE_PAGE_HEADER + SIZE_TUPLE_INFO * i + 4, &info.tuple_size, sizeof(int));
-    short unsigned int sum = 0;
-    for (int i = 0; i < info.null_bit_map.size(); i++) {
-        if (info.null_bit_map[i]) {
-            sum += pow(2, i);
-        }
-    }
+    short unsigned int sum = info.null_bit_map.to_ulong();
     memcpy(GetData() + SIZE_TABLE_PAGE_HEADER + SIZE_TUPLE_INFO * i + 8, &sum, sizeof(unsigned short int));
 }
 
