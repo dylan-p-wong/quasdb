@@ -5,6 +5,7 @@ enum class DataType { Boolean, Integer, Float, Varchar, Null };
 class AbstractData {
 public:
     DataType type;
+    std::unique_ptr<AbstractData> Copy() const;
     AbstractData(DataType type) : type{type} {}
     bool IsTruthy();
     virtual ~AbstractData() = 0;

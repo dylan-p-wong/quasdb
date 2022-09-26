@@ -1,4 +1,6 @@
+#include <memory>
 #include "shared.h"
+#include "error.h"
 
 bool AbstractData::IsTruthy() {
     if (type == DataType::Boolean) {
@@ -16,3 +18,22 @@ bool AbstractData::IsTruthy() {
 }
 
 AbstractData::~AbstractData() {}
+
+std::unique_ptr<AbstractData> AbstractData::Copy() const {
+    if (type == DataType::Boolean) {
+        auto t = dynamic_cast<const Data<bool>*>(this);
+        return std::make_unique<Data<bool>>(DataType::Boolean, t->value);
+    } else if (type == DataType::Integer) {
+        auto t = dynamic_cast<const Data<int>*>(this);
+        return std::make_unique<Data<int>>(DataType::Integer, t->value);
+    } else if (type == DataType::Float) {
+        auto t = dynamic_cast<const Data<float>*>(this);
+        return std::make_unique<Data<float>>(DataType::Float, t->value);
+    } else if (type == DataType::Varchar) {
+        auto t = dynamic_cast<const Data<std::string>*>(this);
+        return std::make_unique<Data<std::string>>(DataType::Varchar, t->value);
+    } else if (type == DataType::Null) {
+        return std::make_unique<Data<int>>(DataType::Null, 0);
+    }
+    throw Error{ErrorType::Internal, ""};
+}
