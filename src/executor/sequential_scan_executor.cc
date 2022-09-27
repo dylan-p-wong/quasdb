@@ -6,11 +6,11 @@ std::vector<std::vector<AbstractData*>> SequentialScanExecutor::Execute(Catalog 
 
     CatalogTable * table = catalog->ReadTable(plan->table).unwrap();
 
-    std::vector<Tuple*> tuples = table->GetTuples(catalog->GetCatalogBufferManager());
+    std::vector<OutputTuple*> tuples = table->GetTuples(catalog->GetCatalogBufferManager());
 
     std::vector<std::vector<AbstractData*>> rows;
 
-    for (Tuple * tuple : tuples) {
+    for (OutputTuple * tuple : tuples) {
         rows.emplace_back(tuple->GetAsValues(table));
     }
 

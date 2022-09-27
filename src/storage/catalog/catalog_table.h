@@ -46,9 +46,9 @@ public:
         return -1;
     }
 
-    Result<void, Error> InsertTuple(const Tuple &tuple, BufferManager * buffer_manager);
-    Result<Tuple*, Error> GetTuple(const RID & rid, BufferManager * buffer_manager);
-    std::vector<Tuple*> GetTuples(BufferManager * buffer_manager);
+    Result<void, Error> InsertTuple(const InputTuple &tuple, BufferManager * buffer_manager);
+    Result<OutputTuple*, Error> GetTuple(const RID & rid, BufferManager * buffer_manager);
+    std::vector<OutputTuple*> GetTuples(BufferManager * buffer_manager);
     Result<void, Error> MarkDelete(const RID & rid, BufferManager * buffer_manager);
 
     CatalogTable(std::string name, std::vector<CatalogColumn*> columns, int tuple_size);

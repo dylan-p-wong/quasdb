@@ -2,8 +2,11 @@
 #include "tuple.h"
 #include "../catalog/catalog.h"
 
-Tuple::Tuple(RID rid, const char * data_page, std::bitset<16> null_bit_map, const int offset, const int size, const CatalogTable * catalog_table) : null_bit_map{null_bit_map}, tuple_size{size}, data{new char[size]}, rid{rid} {
-    // Copy memory over
+Tuple::Tuple(std::bitset<16> null_bit_map, char * data, int tuple_size) : null_bit_map{null_bit_map}, data{data}, tuple_size{tuple_size} {}
+Tuple::Tuple(char * data, int tuple_size) : data{data}, tuple_size{tuple_size} {}
+
+OutputTuple::OutputTuple(RID rid, const char * data_page, std::bitset<16> null_bit_map, const int offset, const int tuple_size) : Tuple{null_bit_map, new char[tuple_size], tuple_size}, rid{rid} {
+    data = new char[tuple_size];
     memcpy(data, data_page + offset, tuple_size);
 }
 
@@ -38,7 +41,15 @@ std::unique_ptr<AbstractData> Tuple::GetValueAtColumnIndex(int index, const Cata
     throw Error{ErrorType::Internal, ""};
 }
 
-Tuple::Tuple(const std::vector<std::unique_ptr<AbstractData>> & values, const CatalogTable * catalog_table) {
+std::vector<AbstractData*> Tuple::GetAsValues(const CatalogTable * catalog_table) {
+    std::vector<AbstractData*> row;
+    for (int i = 0; i < catalog_table->GetNumberOfColumns(); i++) {
+        row.emplace_back(GetValueAtColumnIndex(i, catalog_table).release());
+    }
+    return row;
+}
+
+InputTuple::InputTuple(const std::vector<std::unique_ptr<AbstractData>> & values, const CatalogTable * catalog_table) : Tuple{new char[tuple_size], catalog_table->GetLengthOfTuple()} {
     // Calculate Size
     tuple_size = catalog_table->GetLengthOfTuple();
 
@@ -63,12 +74,4 @@ Tuple::Tuple(const std::vector<std::unique_ptr<AbstractData>> & values, const Ca
             throw Error{ErrorType::Internal, ""};
         }
     }
-}
-
-std::vector<AbstractData*> Tuple::GetAsValues(const CatalogTable * catalog_table) {
-    std::vector<AbstractData*> row;
-    for (int i = 0; i < catalog_table->GetNumberOfColumns(); i++) {
-        row.emplace_back(GetValueAtColumnIndex(i, catalog_table).release());
-    }
-    return row;
 }

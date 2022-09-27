@@ -25,8 +25,8 @@ class TablePage : public Page {
 public:
     void Init();
 
-    Result<void, Error> InsertTuple(const Tuple &tuple, CatalogTable * catalog_table);
-    Result<Tuple*, Error> GetTuple(const RID & rid, const CatalogTable * catalog_table);
+    Result<void, Error> InsertTuple(const InputTuple &tuple, CatalogTable * catalog_table);
+    Result<OutputTuple*, Error> GetTuple(const RID & rid, const CatalogTable * catalog_table);
     Result<void, Error> MarkDelete(const RID & rid, const CatalogTable * catalog_table);
 
     int GetTupleCount() {

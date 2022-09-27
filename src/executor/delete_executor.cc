@@ -5,9 +5,9 @@ DeleteExecutor::DeleteExecutor(const DeletePlan * plan) : AbstractExecutor{}, pl
 
 std::vector<std::vector<AbstractData*>> DeleteExecutor::Execute(Catalog * catalog) {
     CatalogTable * table = catalog->ReadTable(plan->table).unwrap();
-    std::vector<Tuple*> tuples = table->GetTuples(catalog->GetCatalogBufferManager());
+    std::vector<OutputTuple*> tuples = table->GetTuples(catalog->GetCatalogBufferManager());
 
-    for (Tuple * tuple : tuples) {
+    for (OutputTuple * tuple : tuples) {
         if (plan->where && !plan->where->Evaluate(plan->GetScope(), tuple->GetAsValues(table))->IsTruthy()) {
             continue;
         }

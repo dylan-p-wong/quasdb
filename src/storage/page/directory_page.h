@@ -60,7 +60,7 @@ public:
         return -1;
     }
 
-    Result<void, Error> InsertTuple(const Tuple &tuple, BufferManager * buffer_manager, CatalogTable * catalog_table);
-    Result<Tuple*, Error> GetTuple(const RID &rid, BufferManager * buffer_manager, CatalogTable * catalog_table);
+    Result<void, Error> InsertTuple(const InputTuple &tuple, BufferManager * buffer_manager, CatalogTable * catalog_table);
+    Result<OutputTuple*, Error> GetTuple(const RID &rid, BufferManager * buffer_manager, CatalogTable * catalog_table);
     Result<void, Error> MarkDelete(const RID & rid, BufferManager * buffer_manager, const CatalogTable * catalog_table);
 };

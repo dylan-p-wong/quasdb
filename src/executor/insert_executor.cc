@@ -17,7 +17,7 @@ std::vector<std::vector<AbstractData*>> InsertExecutor::Execute(Catalog * catalo
         }
 
         for (int i = 0; i < plan->values.size(); i++) {
-            Tuple t{plan->values.at(i), table};
+            InputTuple t{plan->values.at(i), table};
             auto tuple_res = table->InsertTuple(t, catalog->GetCatalogBufferManager());
 
             if (tuple_res.isErr()) {
@@ -56,7 +56,7 @@ std::vector<std::vector<AbstractData*>> InsertExecutor::Execute(Catalog * catalo
             }
 
             // insert
-            Tuple t{updated_value, table};
+            InputTuple t{updated_value, table};
             auto tuple_res = table->InsertTuple(t, catalog->GetCatalogBufferManager());
 
             if (tuple_res.isErr()) {

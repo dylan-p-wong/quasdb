@@ -11,7 +11,7 @@ void DirectoryPage::Init() {
     }
 }
 
-Result<void, Error> DirectoryPage::InsertTuple(const Tuple &tuple, BufferManager * buffer_manager, CatalogTable * catalog_table) {
+Result<void, Error> DirectoryPage::InsertTuple(const InputTuple &tuple, BufferManager * buffer_manager, CatalogTable * catalog_table) {
     // try to find space in current directory page
     for (int i = 0; i < GetMaxNumberOfDataPages(); i++) {
         
@@ -50,7 +50,7 @@ Result<void, Error> DirectoryPage::InsertTuple(const Tuple &tuple, BufferManager
     return dp->InsertTuple(tuple, buffer_manager, catalog_table);
 }
 
-Result<Tuple*, Error> DirectoryPage::GetTuple(const RID &rid, BufferManager * buffer_manager, CatalogTable * catalog_table) {
+Result<OutputTuple*, Error> DirectoryPage::GetTuple(const RID &rid, BufferManager * buffer_manager, CatalogTable * catalog_table) {
     for (int i = 0; i < GetMaxNumberOfDataPages(); i++) {
         if (GetDataPagePageId(i) == -1) {
             break;

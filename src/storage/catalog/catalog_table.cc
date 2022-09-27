@@ -64,7 +64,7 @@ bool CatalogTable::ValidateRow(const std::vector<std::unique_ptr<AbstractData>> 
     return true;
 }
 
-Result<void, Error> CatalogTable::InsertTuple(const Tuple &tuple, BufferManager * buffer_manager) {
+Result<void, Error> CatalogTable::InsertTuple(const InputTuple &tuple, BufferManager * buffer_manager) {
     if (first_data_page_directory_page_id == -1) {
         first_data_page_directory_page_id = buffer_manager->NewPage()->GetPageId();
         DirectoryPage * p = reinterpret_cast<DirectoryPage*>(buffer_manager->GetPage(first_data_page_directory_page_id));
@@ -90,7 +90,7 @@ Result<void, Error> CatalogTable::InsertTuple(const Tuple &tuple, BufferManager 
     return Ok();
 }
 
-Result<Tuple*, Error> CatalogTable::GetTuple(const RID & rid, BufferManager * buffer_manager) {
+Result<OutputTuple*, Error> CatalogTable::GetTuple(const RID & rid, BufferManager * buffer_manager) {
     if (first_data_page_directory_page_id == -1) {
         return Err(Error{ErrorType::Internal, ""});
     }
@@ -99,8 +99,8 @@ Result<Tuple*, Error> CatalogTable::GetTuple(const RID & rid, BufferManager * bu
     return dp->GetTuple(rid, buffer_manager, this);
 }
 
-std::vector<Tuple*> CatalogTable::GetTuples(BufferManager * buffer_manager) {
-    std::vector<Tuple*> res;
+std::vector<OutputTuple*> CatalogTable::GetTuples(BufferManager * buffer_manager) {
+    std::vector<OutputTuple*> res;
 
     int directory_page_id = first_data_page_directory_page_id;
 

@@ -6,7 +6,7 @@ void TablePage::Init() {
     SetFreeSpacePointer(PAGE_SIZE);
 }
 
-Result<void, Error> TablePage::InsertTuple(const Tuple &tuple, CatalogTable * catalog_table) {
+Result<void, Error> TablePage::InsertTuple(const InputTuple &tuple, CatalogTable * catalog_table) {
     // find empty space and insert, update header, return error if none
     for (int i = 0; i < GetTupleCount(); i++) {
         if (GetTupleInfo(i).tuple_size == 0) {
@@ -25,22 +25,13 @@ Result<void, Error> TablePage::InsertTuple(const Tuple &tuple, CatalogTable * ca
     // write tuple
     memcpy(GetData() + GetFreeSpacePointer(), tuple.GetData(), tuple.GetTupleSize());
 
-    // create null bit map
-    std::bitset<16> null_bit_map;
-    for (int i = 0; i < catalog_table->GetNumberOfColumns(); i++) {
-        if (tuple.GetValueAtColumnIndex(i, catalog_table)->type == DataType::Null) {
-            null_bit_map.set(i, true);
-        }
-    }
-
-    SetTupleInfo(GetTupleCount(), TupleInfo{tuple.GetNullBitMap(), GetFreeSpacePointer(), tuple.GetTupleSize()});
-    
+    SetTupleInfo(GetTupleCount(), TupleInfo{tuple.GetNullBitMap(), GetFreeSpacePointer(), tuple.GetTupleSize()}); 
     SetTupleCount(GetTupleCount() + 1);
 
     return Ok();
 }
 
-Result<Tuple*, Error> TablePage::GetTuple(const RID & rid, const CatalogTable * catalog_table) {
+Result<OutputTuple*, Error> TablePage::GetTuple(const RID & rid, const CatalogTable * catalog_table) {
     if (GetTupleCount() < rid.slot_number || GetTupleInfo(rid.slot_number).tuple_size == 0) {
         return Err(Error{ErrorType::Internal, "Tuple does not exists at this slot."});
     }
@@ -49,7 +40,7 @@ Result<Tuple*, Error> TablePage::GetTuple(const RID & rid, const CatalogTable * 
         return Err(Error{ErrorType::Internal, "Tuple is deleted."});
     }
 
-    Tuple * res = new Tuple{rid, GetData(), GetTupleInfo(rid.slot_number).null_bit_map, GetTupleInfo(rid.slot_number).offset, GetTupleInfo(rid.slot_number).tuple_size, catalog_table};
+    OutputTuple * res = new OutputTuple{rid, GetData(), GetTupleInfo(rid.slot_number).null_bit_map, GetTupleInfo(rid.slot_number).offset, GetTupleInfo(rid.slot_number).tuple_size};
     return Ok(res);
 }
 
