@@ -4,9 +4,15 @@
 DeleteExecutor::DeleteExecutor(const DeletePlan * plan) : AbstractExecutor{}, plan{plan} {}
 
 std::vector<std::vector<AbstractData*>> DeleteExecutor::Execute(Catalog * catalog) {
-    std::vector<std::vector<AbstractData*>> rows = ExecutorFactory::CreateExecutor(plan->source).get()->Execute(catalog);
+    CatalogTable * table = catalog->ReadTable(plan->table).unwrap();
+    std::vector<Tuple*> tuples = table->GetTuples(catalog->GetCatalogBufferManager());
 
-    // TODO() Still need to delete. Need RID.
+    for (Tuple * tuple : tuples) {
+        if (plan->where && !plan->where->Evaluate(plan->GetScope(), tuple->GetAsValues(table))->IsTruthy()) {
+            continue;
+        }
+        table->MarkDelete(tuple->GetRID(), catalog->GetCatalogBufferManager());
+    }
 
     std::vector<std::vector<AbstractData*>> res;
     return res;

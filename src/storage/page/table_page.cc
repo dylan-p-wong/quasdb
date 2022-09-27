@@ -49,7 +49,7 @@ Result<Tuple*, Error> TablePage::GetTuple(const RID & rid, const CatalogTable * 
         return Err(Error{ErrorType::Internal, "Tuple is deleted."});
     }
 
-    Tuple * res = new Tuple{GetData(), GetTupleInfo(rid.slot_number).null_bit_map, GetTupleInfo(rid.slot_number).offset, GetTupleInfo(rid.slot_number).tuple_size, catalog_table};
+    Tuple * res = new Tuple{rid, GetData(), GetTupleInfo(rid.slot_number).null_bit_map, GetTupleInfo(rid.slot_number).offset, GetTupleInfo(rid.slot_number).tuple_size, catalog_table};
     return Ok(res);
 }
 

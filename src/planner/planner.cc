@@ -59,22 +59,13 @@ std::unique_ptr<PlanNode> Planner::CreatePlan(Statement * ast) {
 
                 // build limit clause
                 
-                // return std::make_unique<SequentialScanPlan>(dynamic_cast<TableFromItem*>(select_statement->from.at(0))->name, catalog);
                 return std::move(node);
             }
             case StatementType::Delete: {
                 DeleteStatement * delete_statement = dynamic_cast<DeleteStatement*>(ast);
 
-                // build from clause
-                std::unique_ptr<PlanNode> node = BuildFromNodePlan(new TableFromItem{delete_statement->table, ""});
-
-                // build where clause
-                if (delete_statement->where) {
-                    node = std::make_unique<FilterPlan>(node.release(), delete_statement->where, catalog); // should not use release but temp
-                }
-
                 // build delete node
-                node = std::make_unique<DeletePlan>(node.release(), delete_statement->table, catalog);
+                std::unique_ptr<PlanNode> node = std::make_unique<DeletePlan>(delete_statement->table, delete_statement->where, catalog);
 
                 return std::move(node);
             }

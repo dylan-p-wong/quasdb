@@ -10,7 +10,7 @@
 class DeletePlan : public PlanNode {
 public:
     std::string table;
-    PlanNode * source;
-    DeletePlan(PlanNode * source, std::string table, Catalog * catalog);
+    Expression * where;
+    DeletePlan(std::string table, Expression * where, Catalog * catalog);
     Scope GetScope() const override;
 };

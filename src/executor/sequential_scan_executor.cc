@@ -11,11 +11,7 @@ std::vector<std::vector<AbstractData*>> SequentialScanExecutor::Execute(Catalog 
     std::vector<std::vector<AbstractData*>> rows;
 
     for (Tuple * tuple : tuples) {
-        std::vector<AbstractData*> row;
-        for (int i = 0; i < table->GetNumberOfColumns(); i++) {
-            row.emplace_back(tuple->GetValueAtColumnIndex(i, table).release());
-        }
-        rows.emplace_back(row);
+        rows.emplace_back(tuple->GetAsValues(table));
     }
 
     return rows;

@@ -2,7 +2,7 @@
 #include "tuple.h"
 #include "../catalog/catalog.h"
 
-Tuple::Tuple(const char * data_page, std::bitset<16> null_bit_map, const int offset, const int size, const CatalogTable * catalog_table) : null_bit_map{null_bit_map}, tuple_size{size}, data{new char[size]} {
+Tuple::Tuple(RID rid, const char * data_page, std::bitset<16> null_bit_map, const int offset, const int size, const CatalogTable * catalog_table) : null_bit_map{null_bit_map}, tuple_size{size}, data{new char[size]}, rid{rid} {
     // Copy memory over
     memcpy(data, data_page + offset, tuple_size);
 }
@@ -63,4 +63,12 @@ Tuple::Tuple(const std::vector<std::unique_ptr<AbstractData>> & values, const Ca
             throw Error{ErrorType::Internal, ""};
         }
     }
+}
+
+std::vector<AbstractData*> Tuple::GetAsValues(const CatalogTable * catalog_table) {
+    std::vector<AbstractData*> row;
+    for (int i = 0; i < catalog_table->GetNumberOfColumns(); i++) {
+        row.emplace_back(GetValueAtColumnIndex(i, catalog_table).release());
+    }
+    return row;
 }
