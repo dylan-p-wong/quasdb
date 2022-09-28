@@ -37,3 +37,43 @@ std::unique_ptr<AbstractData> AbstractData::Copy() const {
     }
     throw Error{ErrorType::Internal, ""};
 }
+
+bool AbstractData::operator<(const AbstractData * other) const {
+    if (type == DataType::Varchar && other->type == DataType::Varchar) {
+        return dynamic_cast<const Data<std::string>*>(this)->value < dynamic_cast<const Data<std::string>*>(other)->value;
+    }
+
+    if (type == DataType::Integer && other->type == DataType::Integer) {
+        return dynamic_cast<const Data<int>*>(this)->value < dynamic_cast<const Data<int>*>(other)->value;
+    }
+
+    if (type == DataType::Float && other->type == DataType::Float) {
+        return dynamic_cast<const Data<float>*>(this)->value < dynamic_cast<const Data<float>*>(other)->value;
+    }
+
+    throw Error{ErrorType::Internal, ""};
+}
+
+bool AbstractData::operator>(const AbstractData * other) const {
+    return *other < this;
+}
+
+bool AbstractData::operator==(const AbstractData * other) const {
+    if (type == DataType::Varchar && other->type == DataType::Varchar) {
+        return dynamic_cast<const Data<std::string>*>(this)->value == dynamic_cast<const Data<std::string>*>(other)->value;
+    }
+
+    if (type == DataType::Integer && other->type == DataType::Integer) {
+        return dynamic_cast<const Data<int>*>(this)->value == dynamic_cast<const Data<int>*>(other)->value;
+    }
+
+    if (type == DataType::Float && other->type == DataType::Float) {
+        return dynamic_cast<const Data<float>*>(this)->value == dynamic_cast<const Data<float>*>(other)->value;
+    }
+
+    throw Error{ErrorType::Internal, ""};
+}
+
+bool AbstractData::operator!=(const AbstractData * other) const {
+    return !(*this == other);
+}

@@ -8,7 +8,8 @@ ExecutionOutput Executor::Execute(const PlanNode * plan){
     res.error = false;
     try {
         res.rows = executor.get()->Execute(catalog);
-    } catch (...) {
+    } catch (Error & e) {
+        res.error_message = e.message;
         res.error = true;
     }
     return res;

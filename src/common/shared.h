@@ -9,6 +9,10 @@ public:
     AbstractData(DataType type) : type{type} {}
     bool IsTruthy();
     virtual ~AbstractData() = 0;
+    bool operator<(const AbstractData * other) const;
+    bool operator>(const AbstractData * other) const;
+    bool operator==(const AbstractData * other) const;
+    bool operator!=(const AbstractData * other) const;
 };
 
 template <typename T>

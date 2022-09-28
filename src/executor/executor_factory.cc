@@ -9,6 +9,7 @@
 #include "nested_join_executor.h"
 #include "delete_executor.h"
 #include "update_executor.h"
+#include "order_executor.h"
 
 #include "../planner/plans/create_table_plan.h"
 #include "../planner/plans/drop_table_plan.h"
@@ -19,6 +20,7 @@
 #include "../planner/plans/nested_join_plan.h"
 #include "../planner/plans/delete_plan.h"
 #include "../planner/plans/update_plan.h"
+#include "../planner/plans/order_plan.h"
 
 std::unique_ptr<AbstractExecutor> ExecutorFactory::CreateExecutor(const PlanNode * plan) {
 
@@ -58,6 +60,10 @@ std::unique_ptr<AbstractExecutor> ExecutorFactory::CreateExecutor(const PlanNode
         case PlanType::NestedLoopJoin: {
             const NestedJoinPlan * nested_join_plan = dynamic_cast<const NestedJoinPlan*>(plan);
             return std::make_unique<NestedJoinExecutor>(nested_join_plan);
+        }
+        case PlanType::Order: {
+            const OrderPlan * order_plan = dynamic_cast<const OrderPlan*>(plan);
+            return std::make_unique<OrderExecutor>(order_plan);
         }
         default: {
             // Error unsupported plan

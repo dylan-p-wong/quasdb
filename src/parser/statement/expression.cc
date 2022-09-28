@@ -168,23 +168,9 @@ std::unique_ptr<AbstractData> Expression::Evaluate(const Scope & scope, std::vec
 
             return std::make_unique<Data<int>>(DataType::Integer, (int) pow((float) left_int_data->value, (float) right_int_data->value));
         } else if (type == ExpressionType::GreaterThan) {
-            Data<int> * left_int_data = dynamic_cast<Data<int>*>(left_data);
-            Data<int> * right_int_data = dynamic_cast<Data<int>*>(right_data);
-
-            if (left_int_data == nullptr || right_int_data == nullptr) {
-                throw Error{ErrorType::Internal, "Unsupported type."};
-            }
-
-            return std::make_unique<Data<bool>>(DataType::Boolean, left_int_data->value > right_int_data->value);
+            return std::make_unique<Data<bool>>(DataType::Boolean, *left_data > right_data);   
         } else if (type == ExpressionType::LessThan) {
-            Data<int> * left_int_data = dynamic_cast<Data<int>*>(left_data);
-            Data<int> * right_int_data = dynamic_cast<Data<int>*>(right_data);
-
-            if (left_int_data == nullptr || right_int_data == nullptr) {
-                throw Error{ErrorType::Internal, "Unsupported type."};
-            }
-
-            return std::make_unique<Data<bool>>(DataType::Boolean, left_int_data->value < right_int_data->value);
+            return std::make_unique<Data<bool>>(DataType::Boolean, *left_data < right_data);   
         } else if (type == ExpressionType::Modulo) {
             Data<int> * left_int_data = dynamic_cast<Data<int>*>(left_data);
             Data<int> * right_int_data = dynamic_cast<Data<int>*>(right_data);
@@ -195,23 +181,9 @@ std::unique_ptr<AbstractData> Expression::Evaluate(const Scope & scope, std::vec
 
             return std::make_unique<Data<int>>(DataType::Integer, left_int_data->value % right_int_data->value);
         } else if (type == ExpressionType::Equal) {
-            Data<int> * left_int_data = dynamic_cast<Data<int>*>(left_data);
-            Data<int> * right_int_data = dynamic_cast<Data<int>*>(right_data);
-
-            if (left_int_data == nullptr || right_int_data == nullptr) {
-                throw Error{ErrorType::Internal, "Unsupported type."};
-            }
-
-            return std::make_unique<Data<bool>>(DataType::Boolean, left_int_data->value == right_int_data->value);
+            return std::make_unique<Data<bool>>(DataType::Boolean, *left_data == right_data);
         } else if (type == ExpressionType::NotEqual) {
-            Data<int> * left_int_data = dynamic_cast<Data<int>*>(left_data);
-            Data<int> * right_int_data = dynamic_cast<Data<int>*>(right_data);
-
-            if (left_int_data == nullptr || right_int_data == nullptr) {
-                throw Error{ErrorType::Internal, "Unsupported type."};
-            }
-
-            return std::make_unique<Data<bool>>(DataType::Boolean, left_int_data->value != right_int_data->value);
+            return std::make_unique<Data<bool>>(DataType::Boolean, *left_data != right_data);
         } else {
             throw Error{ErrorType::Internal, ""};
         }
@@ -278,6 +250,8 @@ std::unique_ptr<AbstractData> Expression::Evaluate(const Scope & scope, std::vec
             return std::make_unique<Data<bool>>(DataType::Boolean, dynamic_cast<Data<bool>*>(d)->value); 
         } else if (d->type == DataType::Float) {
             return std::make_unique<Data<bool>>(DataType::Float, dynamic_cast<Data<float>*>(d)->value); 
+        } else if (d->type == DataType::Varchar) {
+            return std::make_unique<Data<std::string>>(DataType::Varchar, dynamic_cast<Data<std::string>*>(d)->value); 
         } else {
             throw Error{ErrorType::Internal, "Unsupported type."};
         }

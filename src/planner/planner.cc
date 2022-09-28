@@ -16,7 +16,7 @@
 #include "./plans/nested_join_plan.h"
 #include "./plans/delete_plan.h"
 #include "./plans/update_plan.h"
-
+#include "./plans/order_plan.h"
 
 std::unique_ptr<PlanNode> Planner::CreatePlan(Statement * ast) {
     try {
@@ -56,6 +56,9 @@ std::unique_ptr<PlanNode> Planner::CreatePlan(Statement * ast) {
                 // build having clause
                 
                 // build order clause
+                if (select_statement->order_by.size()) {
+                    node = std::make_unique<OrderPlan>(node.release(), select_statement->order_by, catalog);
+                }
 
                 // build offset clause
 

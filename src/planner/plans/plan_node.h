@@ -21,7 +21,8 @@ enum class PlanType {
     NestedIndexJoin,
     HashJoin,
     Projection,
-    Filter
+    Filter,
+    Order
 };
 
 class PlanNode {
