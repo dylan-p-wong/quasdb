@@ -78,3 +78,24 @@ Result<void, Error> TablePage::MarkDelete(const RID & rid, const CatalogTable * 
 
     return Ok();
 }
+
+Result<void, Error> TablePage::UpdateTuple(const RID & rid, std::unordered_map<std::string, AbstractData*> set, const CatalogTable * catalog_table) {
+if (GetTupleCount() < rid.slot_number) {
+        return Err(Error{ErrorType::Internal, "Tuple does not exists at this slot."});
+    }
+
+    int tuple_size = GetTupleInfo(rid.slot_number).tuple_size;
+    
+    if (tuple_size == 0) {
+        return Err(Error{ErrorType::Internal, "Tuple does not exists at this slot."});
+    }
+
+    OutputTuple * tuple = new OutputTuple{rid, GetData(), GetTupleInfo(rid.slot_number).null_bit_map, GetTupleInfo(rid.slot_number).offset, GetTupleInfo(rid.slot_number).tuple_size};
+
+    for (auto& it: set) {
+        tuple->Update(it.first, it.second, catalog_table);
+    }
+
+    memcpy(GetData() + GetTupleInfo(rid.slot_number).offset, tuple->GetData(), tuple->GetTupleSize());
+    return Ok();
+}

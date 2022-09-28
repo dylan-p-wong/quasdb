@@ -12,6 +12,6 @@ class UpdateStatement : public Statement {
 public:
     std::string table;
     std::unordered_map<std::string, Expression*> set;
-    Expression * where;
+    Expression * where = nullptr;
     UpdateStatement();
 };

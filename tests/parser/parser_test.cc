@@ -431,6 +431,18 @@ TEST(ParserTest, ParserUpdate2) {
   EXPECT_NE(i, nullptr);
   EXPECT_EQ(i->table, "test");
   EXPECT_EQ(i->set["r"]->Display(), "8");
+  EXPECT_EQ(i->where, nullptr);
+}
+
+TEST(ParserTest, ParserUpdate3) {
+  Parser p{"UPDATE test1 SET id=8"};
+  auto s = p.ParseStatement();
+  EXPECT_EQ(s.isOk(), true);
+  UpdateStatement * i = dynamic_cast<UpdateStatement*>(s.unwrap());
+  EXPECT_NE(i, nullptr);
+  EXPECT_EQ(i->table, "test1");
+  EXPECT_EQ(i->set["id"]->Display(), "8");
+  EXPECT_EQ(i->where, nullptr);
 }
 
 TEST(ParserTest, ParserJoin1) {

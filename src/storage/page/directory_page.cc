@@ -85,3 +85,21 @@ Result<void, Error> DirectoryPage::MarkDelete(const RID & rid, BufferManager * b
     DirectoryPage * dp = reinterpret_cast<DirectoryPage*>(buffer_manager->GetPage(GetNextDirectoryPageId()));
     return dp->MarkDelete(rid, buffer_manager, catalog_table);
 }
+
+Result<void, Error> DirectoryPage::UpdateTuple(const RID & rid, std::unordered_map<std::string, AbstractData*> set, BufferManager * buffer_manager, const CatalogTable * catalog_table) {
+    for (int i = 0; i < GetMaxNumberOfDataPages(); i++) {
+        if (GetDataPagePageId(i) == -1) {
+            break;
+        }
+
+        if (GetDataPagePageId(i) == rid.page_number) {
+            TablePage * tp = reinterpret_cast<TablePage*>(buffer_manager->GetPage(rid.page_number));
+            return tp->UpdateTuple(rid, set, catalog_table);
+        }
+    }
+    if (GetNextDirectoryPageId() == -1) {
+        return Err(Error{ErrorType::Internal, ""});
+    }
+    DirectoryPage * dp = reinterpret_cast<DirectoryPage*>(buffer_manager->GetPage(GetNextDirectoryPageId()));
+    return dp->UpdateTuple(rid, set, buffer_manager, catalog_table);
+}

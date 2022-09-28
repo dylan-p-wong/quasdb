@@ -23,6 +23,7 @@ public:
     char * GetData() const {
         return data;
     }
+    void Update(std::string column, AbstractData * data, const CatalogTable * catalog_table);
     std::bitset<16> GetNullBitMap() const {
         return null_bit_map;
     }

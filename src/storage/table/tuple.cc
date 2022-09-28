@@ -6,7 +6,6 @@ Tuple::Tuple(std::bitset<16> null_bit_map, char * data, int tuple_size) : null_b
 Tuple::Tuple(char * data, int tuple_size) : data{data}, tuple_size{tuple_size} {}
 
 OutputTuple::OutputTuple(RID rid, const char * data_page, std::bitset<16> null_bit_map, const int offset, const int tuple_size) : Tuple{null_bit_map, new char[tuple_size], tuple_size}, rid{rid} {
-    data = new char[tuple_size];
     memcpy(data, data_page + offset, tuple_size);
 }
 
@@ -49,13 +48,7 @@ std::vector<AbstractData*> Tuple::GetAsValues(const CatalogTable * catalog_table
     return row;
 }
 
-InputTuple::InputTuple(const std::vector<std::unique_ptr<AbstractData>> & values, const CatalogTable * catalog_table) : Tuple{new char[tuple_size], catalog_table->GetLengthOfTuple()} {
-    // Calculate Size
-    tuple_size = catalog_table->GetLengthOfTuple();
-
-    // Allocate memory
-    data = new char[tuple_size];
-
+InputTuple::InputTuple(const std::vector<std::unique_ptr<AbstractData>> & values, const CatalogTable * catalog_table) : Tuple{new char[catalog_table->GetLengthOfTuple()], catalog_table->GetLengthOfTuple()} {
     // Serialize into byte data
     for (int i = 0 ; i < catalog_table->GetNumberOfColumns(); i++) {
         CatalogColumn * catalog_column = catalog_table->GetColumn(i);
@@ -73,5 +66,25 @@ InputTuple::InputTuple(const std::vector<std::unique_ptr<AbstractData>> & values
         } else {
             throw Error{ErrorType::Internal, ""};
         }
+    }
+}
+
+
+void Tuple::Update(std::string column_name, AbstractData * a_data, const CatalogTable * catalog_table) {
+    int i = catalog_table->GetColumnIndexByName(column_name);
+    CatalogColumn * catalog_column = catalog_table->GetColumn(i);
+
+    if (a_data->type == DataType::Integer) {
+        memcpy(data + catalog_column->GetColumnOffset(), &dynamic_cast<Data<int>*>(a_data)->value, catalog_column->GetColumnSize());
+    } else if (a_data->type == DataType::Boolean) {
+        memcpy(data + catalog_column->GetColumnOffset(), &dynamic_cast<Data<bool>*>(a_data)->value, catalog_column->GetColumnSize());
+    } else if (a_data->type == DataType::Float) {
+        memcpy(data + catalog_column->GetColumnOffset(), &dynamic_cast<Data<float>*>(a_data)->value, catalog_column->GetColumnSize());
+    } else if (a_data->type == DataType::Null) {
+        null_bit_map.set(i, true);
+    } else if (a_data->type == DataType::Varchar) {
+        memcpy(data + catalog_column->GetColumnOffset(), &dynamic_cast<Data<std::string>*>(a_data)->value, catalog_column->GetColumnSize());
+    } else {
+        throw Error{ErrorType::Internal, ""};
     }
 }

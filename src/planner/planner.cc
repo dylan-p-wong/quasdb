@@ -5,6 +5,7 @@
 #include "../parser/statement/insert.h"
 #include "../parser/statement/select.h"
 #include "../parser/statement/delete.h"
+#include "../parser/statement/update.h"
 
 #include "./plans/create_table_plan.h"
 #include "./plans/drop_table_plan.h"
@@ -14,6 +15,7 @@
 #include "./plans/projection_plan.h"
 #include "./plans/nested_join_plan.h"
 #include "./plans/delete_plan.h"
+#include "./plans/update_plan.h"
 
 
 std::unique_ptr<PlanNode> Planner::CreatePlan(Statement * ast) {
@@ -66,6 +68,14 @@ std::unique_ptr<PlanNode> Planner::CreatePlan(Statement * ast) {
 
                 // build delete node
                 std::unique_ptr<PlanNode> node = std::make_unique<DeletePlan>(delete_statement->table, delete_statement->where, catalog);
+
+                return std::move(node);
+            }
+            case StatementType::Update: {
+                UpdateStatement * update_statement = dynamic_cast<UpdateStatement*>(ast);
+
+                // build update node
+                std::unique_ptr<PlanNode> node = std::make_unique<UpdatePlan>(update_statement->table, update_statement->where, update_statement->set, catalog);
 
                 return std::move(node);
             }

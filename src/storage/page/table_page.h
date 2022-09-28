@@ -28,6 +28,7 @@ public:
     Result<void, Error> InsertTuple(const InputTuple &tuple, CatalogTable * catalog_table);
     Result<OutputTuple*, Error> GetTuple(const RID & rid, const CatalogTable * catalog_table);
     Result<void, Error> MarkDelete(const RID & rid, const CatalogTable * catalog_table);
+    Result<void, Error> UpdateTuple(const RID & rid, std::unordered_map<std::string, AbstractData*> set, const CatalogTable * catalog_table);
 
     int GetTupleCount() {
         return *reinterpret_cast<int*>(GetData() + OFFSET_TUPLE_COUNT);

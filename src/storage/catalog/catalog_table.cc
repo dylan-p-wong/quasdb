@@ -64,6 +64,22 @@ bool CatalogTable::ValidateRow(const std::vector<std::unique_ptr<AbstractData>> 
     return true;
 }
 
+bool CatalogTable::ValidateSet(std::unordered_map<std::string, AbstractData*> set) {
+    for (auto& it: set) {
+        if (GetColumnIndexByName(it.first) < 0) {
+            return false;
+        }
+
+        CatalogColumn * column = columns.at(GetColumnIndexByName(it.first));
+
+        if (!column->ValidateValue(it.second)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 Result<void, Error> CatalogTable::InsertTuple(const InputTuple &tuple, BufferManager * buffer_manager) {
     if (first_data_page_directory_page_id == -1) {
         first_data_page_directory_page_id = buffer_manager->NewPage()->GetPageId();
@@ -135,4 +151,14 @@ Result<void, Error> CatalogTable::MarkDelete(const RID & rid, BufferManager * bu
 
     DirectoryPage * dp = reinterpret_cast<DirectoryPage*>(buffer_manager->GetPage(first_data_page_directory_page_id));
     return dp->MarkDelete(rid, buffer_manager, this);
+}
+
+
+Result<void, Error> CatalogTable::UpdateTuple(const RID & rid, std::unordered_map<std::string, AbstractData*> set, BufferManager * buffer_manager) {
+    if (first_data_page_directory_page_id == -1) {
+        return Err(Error{ErrorType::Internal, ""});
+    }
+
+    DirectoryPage * dp = reinterpret_cast<DirectoryPage*>(buffer_manager->GetPage(first_data_page_directory_page_id));
+    return dp->UpdateTuple(rid, set, buffer_manager, this);
 }

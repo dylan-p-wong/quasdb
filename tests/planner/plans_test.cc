@@ -7,6 +7,7 @@
 #include "planner/plans/create_table_plan.h"
 #include "planner/plans/drop_table_plan.h"
 #include "planner/plans/insert_plan.h"
+#include "planner/plans/update_plan.h"
 
 TEST(PlansTest, PlansCreateTableTest1) {
   Catalog * catalog = new Catalog{nullptr};
@@ -51,4 +52,20 @@ TEST(PlansTest, PlansInsertTest1) {
 
   EXPECT_EQ(dynamic_cast<const Data<int>*>(insert_plan->values.at(0).at(0).get())->value, 8);
   EXPECT_EQ(dynamic_cast<const Data<int>*>(insert_plan->values.at(0).at(1).get())->value, 49);
+}
+
+TEST(PlansTest, PlansUpdateTest1) {
+  Catalog * catalog = new Catalog{nullptr};
+  Planner planner{catalog};
+
+  Parser parser1{"CREATE table test (x integer)"};
+  std::unique_ptr<PlanNode> plan1 = planner.CreatePlan(parser1.ParseStatement().unwrap());
+  
+  Parser parser2{"UPDATE test SET x=8"};
+  std::unique_ptr<PlanNode> plan2 = planner.CreatePlan(parser2.ParseStatement().unwrap());
+
+  const UpdatePlan * update_plan = dynamic_cast<const UpdatePlan*>(plan2.get());
+  EXPECT_NE(update_plan, nullptr);
+  EXPECT_EQ(update_plan->table, "test");
+  EXPECT_EQ(update_plan->where, nullptr);
 }
