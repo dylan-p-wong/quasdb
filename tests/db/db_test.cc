@@ -67,3 +67,17 @@ TEST_F(DBTest, DBTest1) {
   EXPECT_EQ(res.rows.at(5).size(), 7);
   EXPECT_EQ(res.rows.at(6).size(), 7);
 }
+
+TEST_F(DBTest, DBTest2) {
+  auto res = db.Execute("CREATE TABLE test (x integer)");
+  EXPECT_EQ(res.error, false);
+
+  res = db.Execute("SELECT * FROM test");
+  EXPECT_EQ(res.error, false);
+
+  res = db.Execute("  insert into test values (1),(2)");
+  EXPECT_EQ(res.error, false);
+
+  res = db.Execute("DELETE FROM test");
+  EXPECT_EQ(res.error, false);
+}
