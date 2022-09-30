@@ -45,5 +45,5 @@ int CatalogColumn::GetColumnSize() {
     } else if (datatype == DataType::Varchar) {
         return size;
     }
-    throw;
+    throw Error{ErrorType::Internal, "Invalid datatype."};
 }

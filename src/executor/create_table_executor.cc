@@ -7,7 +7,7 @@ std::vector<std::vector<AbstractData*>> CreateTableExecutor::Execute(Catalog * c
     auto create_catalog_table_result = catalog->CreateTable(plan->table);
 
     if (!create_catalog_table_result.isOk()) {
-        throw Error{ErrorType::Internal, ""};
+        throw Error{ErrorType::Internal, "Error creating table."};
     }
 
     std::vector<std::vector<AbstractData*>> res;

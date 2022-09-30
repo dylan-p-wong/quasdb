@@ -7,7 +7,7 @@ std::vector<std::vector<AbstractData*>> DropTableExecutor::Execute(Catalog * cat
     auto delete_catalog_table_result = catalog->DeleteTable(plan->table);
 
     if (!delete_catalog_table_result.isOk()) {
-        throw Error{ErrorType::Internal, ""};
+        throw delete_catalog_table_result.unwrapErr();
     }
 
     std::vector<std::vector<AbstractData*>> res;

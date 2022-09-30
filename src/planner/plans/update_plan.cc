@@ -4,7 +4,7 @@ UpdatePlan::UpdatePlan(std::string table, Expression * where, std::unordered_map
 
 Scope UpdatePlan::GetScope() const {
     if (catalog->ReadTable(table).isErr()) {
-        throw;
+        throw Error{ErrorType::Internal, "Table does not exist."};
     }
 
     Scope s{catalog->ReadTable(table).unwrap()->GetNumberOfColumns()};

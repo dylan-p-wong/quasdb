@@ -154,7 +154,7 @@ std::unique_ptr<AbstractData> Expression::Evaluate(const Scope & scope, std::vec
 
             // Handle divide by 0
             if (right_int_data->value == 0) {
-                throw Error{ErrorType::Internal, ""};
+                throw Error{ErrorType::Internal, "Divide by 0."};
             }
 
             return std::make_unique<Data<int>>(DataType::Integer, left_int_data->value / right_int_data->value);
@@ -185,7 +185,7 @@ std::unique_ptr<AbstractData> Expression::Evaluate(const Scope & scope, std::vec
         } else if (type == ExpressionType::NotEqual) {
             return std::make_unique<Data<bool>>(DataType::Boolean, *left_data != right_data);
         } else {
-            throw Error{ErrorType::Internal, ""};
+            throw Error{ErrorType::Internal, "Unknown infix operator."};
         }
     } else if (dynamic_cast<const PrefixOperation*>(this)) {
         const PrefixOperation * op = dynamic_cast<const PrefixOperation*>(this);
@@ -196,7 +196,7 @@ std::unique_ptr<AbstractData> Expression::Evaluate(const Scope & scope, std::vec
             Data<int> * data = dynamic_cast<Data<int>*>(p.get());
 
             if (data == nullptr) {
-                throw Error{ErrorType::Internal, ""};
+                throw Error{ErrorType::Internal, "Assert failed not an integer."};
             }
 
             return std::make_unique<Data<int>>(DataType::Integer, data->value);
@@ -204,17 +204,17 @@ std::unique_ptr<AbstractData> Expression::Evaluate(const Scope & scope, std::vec
             Data<int> * data = dynamic_cast<Data<int>*>(p.get());
 
             if (data == nullptr) {
-                throw Error{ErrorType::Internal, ""};
+                throw Error{ErrorType::Internal, "Negate failed not an integer."};
             }
 
             return std::make_unique<Data<int>>(DataType::Integer, data->value * -1);
         } else if (type == ExpressionType::Not) {
             return std::make_unique<Data<bool>>(DataType::Boolean, !p->IsTruthy());
         } else {
-            throw Error{ErrorType::Internal, ""};
+            throw Error{ErrorType::Internal, "Unknown prefix operater."};
         }
     } else if (dynamic_cast<const PostfixOperation*>(this)) {
-        throw Error{ErrorType::Internal, ""};
+        throw Error{ErrorType::Internal, "Unknown postfix operater."};
     } else if (dynamic_cast<const IsNullOperation*>(this)) {
         const IsNullOperation * op = dynamic_cast<const IsNullOperation*>(this);
         auto p = op->Evaluate(scope, row);
@@ -239,7 +239,7 @@ std::unique_ptr<AbstractData> Expression::Evaluate(const Scope & scope, std::vec
         std::string field = dynamic_cast<const Field*>(this)->field;
         
         if (scope.GetFieldIndex(from + "." + field) < 0) {
-            throw Error{ErrorType::Internal, ""};
+            throw Error{ErrorType::Internal, "Unknown identifier."};
         }
         
         // temp fix
@@ -249,13 +249,13 @@ std::unique_ptr<AbstractData> Expression::Evaluate(const Scope & scope, std::vec
         } else if (d->type == DataType::Boolean) {
             return std::make_unique<Data<bool>>(DataType::Boolean, dynamic_cast<Data<bool>*>(d)->value); 
         } else if (d->type == DataType::Float) {
-            return std::make_unique<Data<bool>>(DataType::Float, dynamic_cast<Data<float>*>(d)->value); 
+            return std::make_unique<Data<float>>(DataType::Float, dynamic_cast<Data<float>*>(d)->value); 
         } else if (d->type == DataType::Varchar) {
             return std::make_unique<Data<std::string>>(DataType::Varchar, dynamic_cast<Data<std::string>*>(d)->value); 
         } else {
             throw Error{ErrorType::Internal, "Unsupported type."};
         }
     } else {
-        throw Error{ErrorType::Internal, ""};
+        throw Error{ErrorType::Internal, "Unknown error."};
     }
 }

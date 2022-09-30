@@ -2,19 +2,19 @@
 
 SequentialScanPlan::SequentialScanPlan(std::string table, Catalog * catalog) : PlanNode{PlanType::SequentialScan, catalog}, table{table} {
     if (catalog->ReadTable(table).isErr()) {
-        throw;
+        throw Error{ErrorType::Internal, "Table does not exist."};
     }
 }
 
 SequentialScanPlan::SequentialScanPlan(std::string table, std::string alias, Catalog * catalog) : PlanNode{PlanType::SequentialScan, catalog}, has_alias{true}, alias{alias}, table{table} {
     if (catalog->ReadTable(table).isErr()) {
-        throw;
+        throw Error{ErrorType::Internal, "Table does not exist."};  
     }
 }
 
 Scope SequentialScanPlan::GetScope() const {
     if (catalog->ReadTable(table).isErr()) {
-        throw;
+        throw Error{ErrorType::Internal, "Table does not exist."};
     }
 
     Scope s{catalog->ReadTable(table).unwrap()->GetNumberOfColumns()};

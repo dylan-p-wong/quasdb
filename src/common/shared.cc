@@ -35,7 +35,7 @@ std::unique_ptr<AbstractData> AbstractData::Copy() const {
     } else if (type == DataType::Null) {
         return std::make_unique<Data<int>>(DataType::Null, 0);
     }
-    throw Error{ErrorType::Internal, ""};
+    throw Error{ErrorType::Internal, "Error copying data."};
 }
 
 bool AbstractData::operator<(const AbstractData * other) const {
@@ -51,7 +51,7 @@ bool AbstractData::operator<(const AbstractData * other) const {
         return dynamic_cast<const Data<float>*>(this)->value < dynamic_cast<const Data<float>*>(other)->value;
     }
 
-    throw Error{ErrorType::Internal, ""};
+    throw Error{ErrorType::Internal, "Error comparing data."};
 }
 
 bool AbstractData::operator>(const AbstractData * other) const {
@@ -71,7 +71,7 @@ bool AbstractData::operator==(const AbstractData * other) const {
         return dynamic_cast<const Data<float>*>(this)->value == dynamic_cast<const Data<float>*>(other)->value;
     }
 
-    throw Error{ErrorType::Internal, ""};
+    throw Error{ErrorType::Internal, "Error comparing data."};
 }
 
 bool AbstractData::operator!=(const AbstractData * other) const {

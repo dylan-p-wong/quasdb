@@ -47,7 +47,7 @@ public:
                 } else if (data->type == DataType::Varchar) {
                     res += dynamic_cast<Data<std::string>*>(data)->value;
                 } else {
-                    throw Error{ErrorType::Internal, ""};
+                    throw Error{ErrorType::Internal, "Error converting result to string."};
                 }
                 res += "|";
             }

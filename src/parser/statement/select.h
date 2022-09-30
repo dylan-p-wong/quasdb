@@ -50,11 +50,11 @@ class SelectStatement : public Statement {
 public:
     std::vector<SelectItem*> select;
     std::vector<FromItem*> from;
-    Expression * where;
+    Expression * where = nullptr;
     std::vector<Expression*> group_by;
-    Expression * having;
+    Expression * having = nullptr;
     std::vector<OrderItem*> order_by;
-    Expression * offset;
-    Expression * limit;
+    Expression * offset = nullptr;
+    Expression * limit = nullptr;
     SelectStatement();
 };

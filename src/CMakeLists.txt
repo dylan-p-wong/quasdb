@@ -5,6 +5,7 @@ add_subdirectory(parser)
 add_subdirectory(planner)
 add_subdirectory(executor)
 add_subdirectory(storage)
+add_subdirectory(db)
 
 add_library(quas STATIC ${ALL_OBJECT_FILES})
 
@@ -13,4 +14,4 @@ target_include_directories(quas
     ${CMAKE_CURRENT_LIST_DIR}
   )
 
-target_link_libraries(quas common parser planner executor catalog page buffer table)
+target_link_libraries(quas common parser planner executor catalog page buffer table db)
