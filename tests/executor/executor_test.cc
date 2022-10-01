@@ -82,7 +82,7 @@ TEST(ExecutorTest, ExecutorInsertTest1) {
   std::unique_ptr<PlanNode> plan2 = planner.CreatePlan(parser2.ParseStatement().unwrap());
   ExecutionOutput res2 = e.Execute(plan2.get());
 
-  EXPECT_EQ(buffer_manager->next_page_id, 2);
+  EXPECT_EQ(buffer_manager->GetNextPageId(), 2);
   DirectoryPage * dp = reinterpret_cast<DirectoryPage*>(buffer_manager->GetPage(0));
   EXPECT_EQ(dp->GetDataPagePageId(0), 1);
   EXPECT_EQ(dp->GetDataPageFreeSpace(0), 4066);

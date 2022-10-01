@@ -14,4 +14,4 @@ target_include_directories(quas
     ${CMAKE_CURRENT_LIST_DIR}
   )
 
-target_link_libraries(quas common parser planner executor catalog page buffer table db)
+target_link_libraries(quas common parser planner executor catalog page buffer table disk db)

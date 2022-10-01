@@ -8,6 +8,7 @@ class Page {
     char data[PAGE_SIZE]{};
 public:
     Page(int page_id);
+    Page(char * page_data);
     char * GetData() {
         return data;
     }
