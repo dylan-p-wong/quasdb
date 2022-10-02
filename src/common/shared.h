@@ -23,3 +23,4 @@ public:
 };
 
 int DataTypeToInt(DataType d);
+DataType IntToDataType(int d);

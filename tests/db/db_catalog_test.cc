@@ -16,7 +16,7 @@ TEST_F(DBCatalogTest, DBCatalogTest1) {
     auto res = db.Execute("SELECT * FROM systeminfo");
     EXPECT_EQ(res.error, false);
     EXPECT_EQ(res.error_message, "");
-    EXPECT_EQ(res.ToString(), "|course|-1|-1|3|\n|enrollment|-1|-1|2|\n|student|-1|-1|2|\n");
+    EXPECT_EQ(res.ToString(), "|course|18|2|3|\n|enrollment|8|5|2|\n|student|40|6|2|\n");
     EXPECT_EQ(res.rows.size(), 3);
     EXPECT_EQ(res.rows.at(0).size(), 4);
     EXPECT_EQ(res.rows.at(1).size(), 4);

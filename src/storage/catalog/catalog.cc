@@ -4,37 +4,8 @@
 #include "catalog.h"
 
 Catalog::Catalog(BufferManager * buffer_manager) : buffer_manager{buffer_manager} {
-    if (buffer_manager == nullptr) { // TESTING
-        return;
-    }
-
-    table_info_table = InitTableInfoTable();
-
-    if (table_info_table->ValidateTable() == false) {
-        throw Error{ErrorType::Internal, "Bad table."};
-    }
-
-    try {
-        buffer_manager->GetPage(0);
-    } catch (Error & e) {
-        DirectoryPage * dp = reinterpret_cast<DirectoryPage*>(buffer_manager->NewPage());
-        dp->Init();
-    }
-    table_info_table->SetFirstDirectoryPage(0);
-
-    column_info_table = InitColumnInfoTable();
-
-    if (column_info_table->ValidateTable() == false) {
-        throw Error{ErrorType::Internal, "Bad table."};
-    }
-
-    try {
-        buffer_manager->GetPage(1);
-    } catch (Error & e) {
-        DirectoryPage * dp = reinterpret_cast<DirectoryPage*>(buffer_manager->NewPage());
-        dp->Init();
-    }
-    column_info_table->SetFirstDirectoryPage(1);
+    LoadStartingTables();
+    LoadTables();
 }
 
 CatalogTable * Catalog::InitTableInfoTable() {
@@ -51,7 +22,7 @@ CatalogTable * Catalog::InitTableInfoTable() {
     columns.emplace_back(c1);
     current_tuple_size += c1->GetColumnSize();
 
-    Column first_column_page_id_column{"first_column_page_id"};
+    Column first_column_page_id_column{"tuple_size"};
     first_column_page_id_column.data_type = DataType::Integer;
     first_column_page_id_column.nullable = false;
     CatalogColumn * c2 = new CatalogColumn{first_column_page_id_column, current_tuple_size};
@@ -145,6 +116,10 @@ Result<void, Error> Catalog::CreateTable(CatalogTable * table) {
         }
     }
 
+    table->SetFirstDirectoryPage(buffer_manager->NewPage()->GetPageId());
+    DirectoryPage * p = reinterpret_cast<DirectoryPage*>(buffer_manager->GetPage(table->GetFirstDataPageDirectoryPageId()));
+    p->Init();
+
     InsertIntoTableInfoTable(table);
     InsertInfoColumnInfoTable(table);
 
@@ -177,7 +152,7 @@ Result<void, Error> Catalog::InsertInfoColumnInfoTable(CatalogTable * table) {
 Result<void, Error> Catalog::InsertIntoTableInfoTable(CatalogTable * table) {
     std::vector<std::unique_ptr<AbstractData>> t_values;
     t_values.emplace_back(std::make_unique<Data<std::string>>(DataType::Varchar, table->GetTableName()));
-    t_values.emplace_back(std::make_unique<Data<int>>(DataType::Integer, table->GetFirstDataPageDirectoryPageId())); // not used atm
+    t_values.emplace_back(std::make_unique<Data<int>>(DataType::Integer, table->GetLengthOfTuple())); // not used atm
     t_values.emplace_back(std::make_unique<Data<int>>(DataType::Integer, table->GetFirstDataPageDirectoryPageId())); // not used atm
     t_values.emplace_back(std::make_unique<Data<int>>(DataType::Integer, table->GetNumberOfColumns())); // not used atm
 
@@ -218,4 +193,84 @@ Result<CatalogTable*, Error> Catalog::ReadTable(const std::string & table_name) 
     }
 
     return Err(Error{ErrorType::Internal, "Table with name not found."});
+}
+
+void Catalog::LoadStartingTables() {
+    if (buffer_manager == nullptr) { // TESTING
+        return;
+    }
+
+    table_info_table = InitTableInfoTable();
+
+    if (table_info_table->ValidateTable() == false) {
+        throw Error{ErrorType::Internal, "Bad table."};
+    }
+
+    try {
+        buffer_manager->GetPage(0);
+    } catch (Error & e) {
+        DirectoryPage * dp = reinterpret_cast<DirectoryPage*>(buffer_manager->NewPage());
+        dp->Init();
+    }
+    table_info_table->SetFirstDirectoryPage(0);
+
+    column_info_table = InitColumnInfoTable();
+
+    if (column_info_table->ValidateTable() == false) {
+        throw Error{ErrorType::Internal, "Bad table."};
+    }
+
+    try {
+        buffer_manager->GetPage(1);
+    } catch (Error & e) {
+        DirectoryPage * dp = reinterpret_cast<DirectoryPage*>(buffer_manager->NewPage());
+        dp->Init();
+    }
+    column_info_table->SetFirstDirectoryPage(1);
+}
+
+void Catalog::LoadTables() {
+    if (buffer_manager == nullptr) { // TESTING
+        return;
+    }
+
+    std::vector<OutputTuple*> column_info_tuples = column_info_table->GetTuples(buffer_manager);
+    std::vector<OutputTuple*> table_info_tuples = table_info_table->GetTuples(buffer_manager);
+
+    for (OutputTuple * table_info_tuple : table_info_tuples) {
+        std::vector<AbstractData*> table_info_values = table_info_tuple->GetAsValues(table_info_table);
+
+        std::string table_name = dynamic_cast<const Data<std::string>*>(table_info_values.at(0))->value;
+        int tuple_size = dynamic_cast<const Data<int>*>(table_info_values.at(1))->value;
+        int first_directory_page_id = dynamic_cast<const Data<int>*>(table_info_values.at(2))->value;
+
+        std::vector<CatalogColumn*> columns;
+
+        for (OutputTuple * column_info_tuple : column_info_tuples) {
+            std::vector<AbstractData*> column_info_values = column_info_tuple->GetAsValues(table_info_table);
+            
+            std::string column_table_name = dynamic_cast<const Data<std::string>*>(column_info_values.at(0))->value;
+
+            if (column_table_name != table_name) {
+                continue;
+            }
+
+            std::string column_name = dynamic_cast<const Data<std::string>*>(column_info_values.at(1))->value;
+
+            Column c{column_name};
+
+            int data_type_int = dynamic_cast<const Data<int>*>(column_info_values.at(2))->value;
+            c.data_type = IntToDataType(data_type_int);
+
+            bool nullable = dynamic_cast<const Data<bool>*>(column_info_values.at(3))->value;
+
+            int offset = dynamic_cast<const Data<int>*>(column_info_values.at(4))->value;
+        
+            CatalogColumn * cc = new CatalogColumn{c, offset};
+            columns.emplace_back(cc);
+        }
+
+        CatalogTable * t = new CatalogTable{table_name, columns, tuple_size};
+        tables.emplace_back(t);
+    }
 }

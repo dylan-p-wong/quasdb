@@ -34,7 +34,7 @@ bool BufferManager::EvictPage() {
     buffer_slot_hash_table.erase(to_delete->GetPageId());
     empty_buffer_slots_list.emplace_back(slot_to_evict);
 
-    FlushPage(to_delete->GetPageId());
+    // FlushPage(to_delete->GetPageId());
 
     delete to_delete;
 
