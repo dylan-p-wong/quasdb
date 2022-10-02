@@ -5,7 +5,7 @@
 class DBTest : public ::testing::Test {
  protected:
   void SetUp() override {}
-  QuasDB db;
+  QuasDB db{"test"};
 };
 
 TEST_F(DBTest, DBTest1) {

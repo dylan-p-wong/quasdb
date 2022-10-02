@@ -25,4 +25,8 @@ public:
 
     // for tests
     int GetNextPageId() { return next_page_id; }
+
+    ~BufferManager() {
+        FlushAllPages();
+    }
 };

@@ -9,7 +9,7 @@ class DBCatalogTest : public ::testing::Test {
       db.Execute("CREATE TABLE enrollment (cid integer not null, sid integer not null)");
       db.Execute("CREATE TABLE student (sid integer not null, name varchar(36))");
   }
-  QuasDB db;
+  QuasDB db{"test"};
 };
 
 TEST_F(DBCatalogTest, DBCatalogTest1) {
