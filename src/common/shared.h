@@ -21,3 +21,5 @@ public:
     Data(DataType type, T value) : AbstractData{type}, value{value} {}
     T value;
 };
+
+int DataTypeToInt(DataType d);

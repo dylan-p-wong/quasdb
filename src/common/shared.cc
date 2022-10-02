@@ -77,3 +77,18 @@ bool AbstractData::operator==(const AbstractData * other) const {
 bool AbstractData::operator!=(const AbstractData * other) const {
     return !(*this == other);
 }
+
+int DataTypeToInt(DataType d) {
+    if (d == DataType::Boolean) {
+        return 0;
+    } else if (d == DataType::Integer) {
+        return 1;
+    } else if (d == DataType::Float) {
+        return 2;
+    } else if (d == DataType::Null) {
+        return 3;
+    } else if (d == DataType::Varchar) {
+        return 4;
+    }
+    return -1;
+}

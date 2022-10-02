@@ -14,11 +14,12 @@ struct Column {
     DataType data_type;
     bool primary_key = false;
     bool nullable = true;
-    Expression * default_value;
+    Expression * default_value = nullptr;
     bool unique = false;
     bool index = false;
     std::optional<std::pair<std::string, std::string>> references; // table.field
     int size = 0; // for varchar
+    Column(std::string name) : name{name} {}
 };
 
 class CreateTable : public Statement {

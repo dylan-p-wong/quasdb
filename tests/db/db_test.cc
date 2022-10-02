@@ -66,6 +66,11 @@ TEST_F(DBTest, DBTest1) {
   EXPECT_EQ(res.rows.at(4).size(), 7);
   EXPECT_EQ(res.rows.at(5).size(), 7);
   EXPECT_EQ(res.rows.at(6).size(), 7);
+
+  res = db.Execute("SELECT * from student where student.name='Kanye'");
+  EXPECT_EQ(res.error, false);
+  EXPECT_EQ(res.rows.size(), 1);
+  EXPECT_EQ(res.ToString(), "|2|Kanye|\n");
 }
 
 TEST_F(DBTest, DBTest2) {
@@ -77,6 +82,10 @@ TEST_F(DBTest, DBTest2) {
 
   res = db.Execute("  insert into test values (1),(2)");
   EXPECT_EQ(res.error, false);
+
+  res = db.Execute("SELECT * FROM test");
+  EXPECT_EQ(res.error, false);
+  EXPECT_EQ(res.ToString(), "|1|\n|2|\n");
 
   res = db.Execute("DELETE FROM test");
   EXPECT_EQ(res.error, false);

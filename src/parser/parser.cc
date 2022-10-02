@@ -138,7 +138,6 @@ Result<Token, Error> Parser::NextExpect(TokenType expect) {
 }
 
 Result<Column, Error> Parser::ParseColumn() {
-    Column c{}; 
 
     Result<Token, Error> nameToken = NextExpect(TokenType::IdentifierValue);
 
@@ -146,7 +145,7 @@ Result<Column, Error> Parser::ParseColumn() {
         return Err(nameToken.unwrapErr());
     }
     
-    c.name = nameToken.unwrap().value;
+    Column c{nameToken.unwrap().value}; 
 
     std::optional<Token> typeToken = NextIf([](Token t) { return t.type == TokenType::Integer || t.type == TokenType::Float || t.type == TokenType::Varchar || t.type == TokenType::Boolean; });
 

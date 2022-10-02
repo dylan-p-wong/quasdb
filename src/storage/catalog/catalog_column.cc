@@ -7,7 +7,7 @@ CatalogColumn::CatalogColumn(const Column &statement_column, int column_offset) 
                                                                default_value{statement_column.default_value != nullptr ? statement_column.default_value->EvaluateConstant() : std::unique_ptr<AbstractData>{}},
                                                                unique{statement_column.unique},
                                                                index{statement_column.index},
-                                                               references{statement_column.references},
+                                                               references{statement_column.references.has_value() ? statement_column.references : std::nullopt},
                                                                column_offset{column_offset},
                                                                size{statement_column.size} {}
 

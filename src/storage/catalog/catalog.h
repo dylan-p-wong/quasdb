@@ -10,14 +10,22 @@
 #include "../buffer/buffer_manager.h"
 
 class Catalog {
-    // int first_table_directory_page_id = -1;
     std::vector<CatalogTable*> tables;
     BufferManager * buffer_manager;
+
+    CatalogTable * table_info_table = nullptr;
+    CatalogTable * column_info_table = nullptr;
 public:
     
     Result<void, Error> CreateTable(CatalogTable * table);
     Result<void, Error> DeleteTable(const std::string & table_name);
     Result<CatalogTable*, Error> ReadTable(const std::string & table_name);
+    Result<void, Error> InsertIntoTableInfoTable(CatalogTable * table);
+    Result<void, Error> InsertInfoColumnInfoTable(CatalogTable * table);
+
+    CatalogTable * InitTableInfoTable();
+    CatalogTable * InitColumnInfoTable();
+
     Catalog(BufferManager * buffer_manager);
 
     std::vector<CatalogTable*> GetTables() {

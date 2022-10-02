@@ -4,6 +4,7 @@ CreateTableExecutor::CreateTableExecutor(const CreateTablePlan * plan) : Abstrac
 
 std::vector<std::vector<AbstractData*>> CreateTableExecutor::Execute(Catalog * catalog) {
 
+    
     auto create_catalog_table_result = catalog->CreateTable(plan->table);
 
     if (!create_catalog_table_result.isOk()) {

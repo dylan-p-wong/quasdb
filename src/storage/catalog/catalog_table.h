@@ -22,6 +22,10 @@ public:
     bool ValidateRow(const std::vector<std::unique_ptr<AbstractData>> & row);
     bool ValidateSet(std::unordered_map<std::string, AbstractData*> set);
 
+    int GetFirstDataPageDirectoryPageId() {
+        return first_data_page_directory_page_id;
+    }
+
     std::vector<CatalogColumn*> GetColumns() {
         return columns;
     }
