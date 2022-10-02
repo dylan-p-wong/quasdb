@@ -4,17 +4,37 @@
 #include "catalog.h"
 
 Catalog::Catalog(BufferManager * buffer_manager) : buffer_manager{buffer_manager} {
+    if (buffer_manager == nullptr) { // TESTING
+        return;
+    }
+
     table_info_table = InitTableInfoTable();
 
     if (table_info_table->ValidateTable() == false) {
         throw Error{ErrorType::Internal, "Bad table."};
     }
 
+    try {
+        buffer_manager->GetPage(0);
+    } catch (Error & e) {
+        DirectoryPage * dp = reinterpret_cast<DirectoryPage*>(buffer_manager->NewPage());
+        dp->Init();
+    }
+    table_info_table->SetFirstDirectoryPage(0);
+
     column_info_table = InitColumnInfoTable();
 
     if (column_info_table->ValidateTable() == false) {
         throw Error{ErrorType::Internal, "Bad table."};
     }
+
+    try {
+        buffer_manager->GetPage(1);
+    } catch (Error & e) {
+        DirectoryPage * dp = reinterpret_cast<DirectoryPage*>(buffer_manager->NewPage());
+        dp->Init();
+    }
+    column_info_table->SetFirstDirectoryPage(1);
 }
 
 CatalogTable * Catalog::InitTableInfoTable() {

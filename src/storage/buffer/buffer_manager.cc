@@ -1,6 +1,6 @@
 #include "buffer_manager.h"
 
-BufferManager::BufferManager() {
+BufferManager::BufferManager(DiskManager * disk_manager) : disk_manager{disk_manager} {
     for (int i = 0; i < 64; i++) {
         empty_buffer_slots_list.emplace_back(i);
     }
@@ -18,7 +18,7 @@ Page * BufferManager::NewPage()  {
 Page * BufferManager::GetPage(int page_id) {
     if (buffer_slot_hash_table.find(page_id) == buffer_slot_hash_table.end()) {
         // read page from disk manager here
-        return new Page{disk_manager->ReadPage(page_id)}; 
+        return new Page{disk_manager->ReadPage(page_id)};
     } else {
         return buffer_pages.at(buffer_slot_hash_table[page_id]);
     }

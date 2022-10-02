@@ -28,6 +28,7 @@ ExecutionOutput QuasDB::Execute(std::string query) {
         ExecutionOutput res;
         res.error = true;
         res.error_message = e.message;
+        std::cerr << "ERROR: " << res.error_message << std::endl;
         return res;
     }
 }
