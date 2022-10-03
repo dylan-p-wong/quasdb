@@ -1,6 +1,10 @@
+#include <iostream>
+
 #include "buffer_manager.h"
 
 BufferManager::BufferManager(DiskManager * disk_manager) : disk_manager{disk_manager} {
+    next_page_id = disk_manager->GetFileSize() / PAGE_SIZE;
+
     for (int i = 0; i < 64; i++) {
         empty_buffer_slots_list.emplace_back(i);
     }
@@ -16,9 +20,15 @@ Page * BufferManager::NewPage()  {
 }
 
 Page * BufferManager::GetPage(int page_id) {
+    std::cerr << "GETTING " << page_id << std::endl;
     if (buffer_slot_hash_table.find(page_id) == buffer_slot_hash_table.end()) {
         // read page from disk manager here
-        return new Page{disk_manager->ReadPage(page_id)};
+        Page * p = new Page{page_id};
+        disk_manager->ReadPage(page_id, p->GetData());
+
+        PutPageInBuffer(p);      
+
+        return p;
     } else {
         return buffer_pages.at(buffer_slot_hash_table[page_id]);
     }
@@ -34,7 +44,7 @@ bool BufferManager::EvictPage() {
     buffer_slot_hash_table.erase(to_delete->GetPageId());
     empty_buffer_slots_list.emplace_back(slot_to_evict);
 
-    // FlushPage(to_delete->GetPageId());
+    FlushPage(to_delete->GetPageId());
 
     delete to_delete;
 
@@ -54,6 +64,7 @@ bool BufferManager::PutPageInBuffer(Page * page) {
 }
 
 bool BufferManager::FlushPage(int page_id) {
+    std::cerr << "FLUSHING " << page_id << std::endl;
     if (buffer_slot_hash_table.find(page_id) != buffer_slot_hash_table.end()) {
         Page * p = buffer_pages.at(buffer_slot_hash_table[page_id]);
         disk_manager->WritePage(page_id, p->GetData());

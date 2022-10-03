@@ -4,7 +4,7 @@
 
 
 DiskManager::DiskManager(std::string file_name) : file_name{file_name} {
-    db_io.open(file_name, std::ios::binary | std::ios::trunc | std::ios::in | std::ios::out); // std::ios::trunc temporary
+    db_io.open(file_name, std::ios::binary | std::ios::in | std::ios::out); // std::ios::trunc temporary
 
     if (!db_io.is_open()) {
         db_io.clear();
@@ -34,10 +34,8 @@ void DiskManager::WritePage(int page_id, char * page_data) {
     db_io.flush();
 }
 
-char * DiskManager::ReadPage(int page_id) {
+void DiskManager::ReadPage(int page_id, char * page_data) {
     int offset = page_id * PAGE_SIZE;
-
-    char page_data[4096]{};
 
     db_io.seekp(offset);
     db_io.read(page_data, PAGE_SIZE);
@@ -48,8 +46,7 @@ char * DiskManager::ReadPage(int page_id) {
     int read_count = db_io.gcount();
     if (read_count < PAGE_SIZE) {
         db_io.clear();
-        throw Error{ErrorType::Internal, "Did not read a page."};
+        std::string e = "Did not read a page " + std::to_string(page_id);
+        throw Error{ErrorType::Internal, e};
     }
-
-    return page_data;
 }
