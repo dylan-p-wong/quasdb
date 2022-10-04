@@ -18,3 +18,10 @@ add_subdirectory(src)
 enable_testing()
 
 add_subdirectory(tests)
+
+add_executable(repl main.cc)
+
+target_link_libraries(repl
+  PRIVATE
+    quas
+)

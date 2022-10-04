@@ -34,4 +34,7 @@ public:
     BufferManager * GetCatalogBufferManager() {
         return buffer_manager;
     }
+
+    void LoadStartingTables();
+    void LoadTables();
 };

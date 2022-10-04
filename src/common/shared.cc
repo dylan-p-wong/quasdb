@@ -92,3 +92,18 @@ int DataTypeToInt(DataType d) {
     }
     return -1;
 }
+
+DataType IntToDataType(int d) {
+    if (d == 0) {
+        return DataType::Boolean;
+    } else if (d == 1) {
+        return DataType::Integer;
+    } else if (d == 2) {
+        return DataType::Float;
+    } else if (d == 3) {
+        return DataType::Null;
+    } else if (d == 4) {
+        return DataType::Varchar;
+    }
+    throw Error{ErrorType::Internal, "Error IntToDataType."};
+}

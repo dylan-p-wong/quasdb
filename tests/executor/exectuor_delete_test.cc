@@ -8,7 +8,7 @@
 class TableTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    buffer_manager = new BufferManager{};
+    buffer_manager = new BufferManager{disk_manager};
     catalog = new Catalog{buffer_manager};
     planner = new Planner{catalog};
     executor = new Executor{catalog};
@@ -24,6 +24,7 @@ class TableTest : public ::testing::Test {
   Catalog * catalog;
   Planner * planner;
   Executor * executor;
+  DiskManager * disk_manager = nullptr;
 };
 
 TEST_F(TableTest, SelectValid) {

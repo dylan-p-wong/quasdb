@@ -12,10 +12,10 @@ class BufferManager {
     DiskManager * disk_manager;
     std::list<int> empty_buffer_slots_list;
     std::unordered_map<int, int> buffer_slot_hash_table;
-    std::atomic<int> next_page_id = 0; // store in disk
+    std::atomic<int> next_page_id = 0; // calculate by file size / PAGE_SIZE
     std::array<Page*, 64> buffer_pages;
 public:
-    BufferManager();
+    BufferManager(DiskManager * disk_manager);
     Page * NewPage();
     Page * GetPage(int page_id);
     bool FlushPage(int page_id);
@@ -25,4 +25,8 @@ public:
 
     // for tests
     int GetNextPageId() { return next_page_id; }
+
+    ~BufferManager() {
+        FlushAllPages();
+    }
 };

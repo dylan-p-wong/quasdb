@@ -5,7 +5,10 @@
 class DBTest : public ::testing::Test {
  protected:
   void SetUp() override {}
-  QuasDB db;
+  QuasDB db{"test"};
+  void TearDown() override {
+    db.Delete();
+  }
 };
 
 TEST_F(DBTest, DBTest1) {

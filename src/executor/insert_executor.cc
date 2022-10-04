@@ -4,7 +4,7 @@ InsertExecutor::InsertExecutor(const InsertPlan * plan) : AbstractExecutor{}, pl
 
 std::vector<std::vector<AbstractData*>> InsertExecutor::Execute(Catalog * catalog) {
     if (catalog->ReadTable(plan->table).isErr()) {
-        throw Error{ErrorType::Internal, ""};
+        throw Error{ErrorType::Internal, "Table not found."};
     }
 
     CatalogTable * table = catalog->ReadTable(plan->table).unwrap();
@@ -12,7 +12,7 @@ std::vector<std::vector<AbstractData*>> InsertExecutor::Execute(Catalog * catalo
     if (plan->columns.size() == 0) {
         for (int i = 0; i < plan->values.size(); i++) {
             if (!table->ValidateRow(plan->values.at(i))) {
-                throw Error{ErrorType::Internal, ""};
+                throw Error{ErrorType::Internal, "Invalid row."};
             }
         }
 

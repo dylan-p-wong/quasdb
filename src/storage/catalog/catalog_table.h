@@ -50,6 +50,9 @@ public:
         }
         return -1;
     }
+    void SetFirstDirectoryPage(int page_id) {
+        first_data_page_directory_page_id = page_id;
+    }
 
     Result<void, Error> InsertTuple(const InputTuple &tuple, BufferManager * buffer_manager);
     Result<OutputTuple*, Error> GetTuple(const RID & rid, BufferManager * buffer_manager);

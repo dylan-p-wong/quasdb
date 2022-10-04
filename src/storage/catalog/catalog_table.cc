@@ -81,12 +81,6 @@ bool CatalogTable::ValidateSet(std::unordered_map<std::string, AbstractData*> se
 }
 
 Result<void, Error> CatalogTable::InsertTuple(const InputTuple &tuple, BufferManager * buffer_manager) {
-    if (first_data_page_directory_page_id == -1) {
-        first_data_page_directory_page_id = buffer_manager->NewPage()->GetPageId();
-        DirectoryPage * p = reinterpret_cast<DirectoryPage*>(buffer_manager->GetPage(first_data_page_directory_page_id));
-        p->Init();
-    }
-
     DirectoryPage * p = reinterpret_cast<DirectoryPage*>(buffer_manager->GetPage(first_data_page_directory_page_id));
 
     while (p->InsertTuple(tuple, buffer_manager, this).isErr()) {

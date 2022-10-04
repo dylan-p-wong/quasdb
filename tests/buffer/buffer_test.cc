@@ -3,25 +3,25 @@
 
 #include "storage/buffer/buffer_manager.h"
 
-TEST(BufferTest, BufferBasicTest1) {
-    std::unique_ptr<BufferManager> bm = std::make_unique<BufferManager>();
+// TEST(BufferTest, BufferBasicTest1) {
+//     std::unique_ptr<BufferManager> bm = std::make_unique<BufferManager>();
 
-    Page * page0 = bm->NewPage();
+//     Page * page0 = bm->NewPage();
 
-    Page * page1 = bm->NewPage();
-    Page * page2 = bm->NewPage();
-    Page * page3 = bm->NewPage();
+//     Page * page1 = bm->NewPage();
+//     Page * page2 = bm->NewPage();
+//     Page * page3 = bm->NewPage();
 
-    EXPECT_EQ(page0->GetPageId(), 0);
-    EXPECT_EQ(page1->GetPageId(), 1);
-    EXPECT_EQ(page2->GetPageId(), 2);
-    EXPECT_EQ(page3->GetPageId(), 3);
+//     EXPECT_EQ(page0->GetPageId(), 0);
+//     EXPECT_EQ(page1->GetPageId(), 1);
+//     EXPECT_EQ(page2->GetPageId(), 2);
+//     EXPECT_EQ(page3->GetPageId(), 3);
 
-    EXPECT_EQ(page0, bm->GetPage(0));
-    EXPECT_EQ(page1, bm->GetPage(1));
-    EXPECT_EQ(page2, bm->GetPage(2));
-    EXPECT_EQ(page3, bm->GetPage(3));
-}
+//     EXPECT_EQ(page0, bm->GetPage(0));
+//     EXPECT_EQ(page1, bm->GetPage(1));
+//     EXPECT_EQ(page2, bm->GetPage(2));
+//     EXPECT_EQ(page3, bm->GetPage(3));
+// }
 
 // TEST(BufferTest, BufferBasicTest2) {
 //     std::unique_ptr<BufferManager> bm = std::make_unique<BufferManager>();

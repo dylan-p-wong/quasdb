@@ -1,12 +1,18 @@
+#include <iostream>
+
+#include "../../common/error.h"
 #include "buffer_manager.h"
 
-BufferManager::BufferManager() {
+BufferManager::BufferManager(DiskManager * disk_manager) : disk_manager{disk_manager} {
+    next_page_id = disk_manager ? disk_manager->GetFileSize() / PAGE_SIZE : 0;
+
     for (int i = 0; i < 64; i++) {
         empty_buffer_slots_list.emplace_back(i);
     }
 }
 
 Page * BufferManager::NewPage()  {
+    // std::cerr << "NEW PAGE " << next_page_id << std::endl;
     Page * new_page = new Page{next_page_id};
     
     PutPageInBuffer(new_page);
@@ -16,9 +22,21 @@ Page * BufferManager::NewPage()  {
 }
 
 Page * BufferManager::GetPage(int page_id) {
+    // std::cerr << "GETTING " << page_id << std::endl;
     if (buffer_slot_hash_table.find(page_id) == buffer_slot_hash_table.end()) {
+        if (!disk_manager) {
+            throw Error{ErrorType::Internal, "Reading page not in buffer but no disk manager."};
+        }
+
         // read page from disk manager here
-        return new Page{disk_manager->ReadPage(page_id)}; 
+        Page * p = new Page{page_id};
+        
+        // Allow for testing without writing to disk
+        disk_manager->ReadPage(page_id, p->GetData());
+
+        PutPageInBuffer(p);      
+
+        return p;
     } else {
         return buffer_pages.at(buffer_slot_hash_table[page_id]);
     }
@@ -54,9 +72,12 @@ bool BufferManager::PutPageInBuffer(Page * page) {
 }
 
 bool BufferManager::FlushPage(int page_id) {
+    // std::cerr << "FLUSHING " << page_id << std::endl;
     if (buffer_slot_hash_table.find(page_id) != buffer_slot_hash_table.end()) {
         Page * p = buffer_pages.at(buffer_slot_hash_table[page_id]);
-        disk_manager->WritePage(page_id, p->GetData());
+        if (disk_manager) {
+            disk_manager->WritePage(page_id, p->GetData());
+        }
         return true;
     }
     return false;
