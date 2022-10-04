@@ -8,7 +8,7 @@
 class TableTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    disk_manager = new DiskManager{"test.db"};
+    disk_manager = nullptr;
     buffer_manager = new BufferManager{disk_manager};
     catalog = new Catalog{buffer_manager};
     planner = new Planner{catalog};

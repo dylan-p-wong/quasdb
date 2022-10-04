@@ -9,7 +9,7 @@
 #include "executor/executor.h"
 
 TEST(ExecutorTest, ExecutorCreateTableTest1) {
-  DiskManager * disk_manager = new DiskManager{"test.db"};
+  DiskManager * disk_manager = nullptr;
   BufferManager * buffer_manager = new BufferManager{disk_manager};
   Catalog * catalog = new Catalog{buffer_manager};
 
@@ -35,7 +35,7 @@ TEST(ExecutorTest, ExecutorCreateTableTest1) {
 }
 
 TEST(ExecutorTest, ExecutorCreateTableTest2) {
-  DiskManager * disk_manager = new DiskManager{"test.db"};
+  DiskManager * disk_manager = nullptr;
   BufferManager * buffer_manager = new BufferManager{disk_manager};
   Catalog * catalog = new Catalog{buffer_manager};
   Planner planner{catalog};
@@ -66,7 +66,7 @@ TEST(ExecutorTest, ExecutorCreateTableTest2) {
 }
 
 TEST(ExecutorTest, ExecutorInsertTest1) {
-  DiskManager * disk_manager = new DiskManager{"test.db"};
+  DiskManager * disk_manager = nullptr;
   BufferManager * buffer_manager = new BufferManager{disk_manager};
   Catalog * catalog = new Catalog{buffer_manager};
   Planner planner{catalog};
@@ -112,7 +112,7 @@ TEST(ExecutorTest, ExecutorInsertTest1) {
 }
 
 TEST(ExecutorTest, ExecutorInsertTest2) {
-  DiskManager * disk_manager = new DiskManager{"test.db"};
+  DiskManager * disk_manager = nullptr;
   BufferManager * buffer_manager = new BufferManager{disk_manager};
   Catalog * catalog = new Catalog{buffer_manager};
   Planner planner{catalog};
@@ -144,7 +144,7 @@ TEST(ExecutorTest, ExecutorInsertTest2) {
 }
 
 TEST(ExecutorTest, ExecutorSelectTest1) {
-  DiskManager * disk_manager = new DiskManager{"test.db"};
+  DiskManager * disk_manager = nullptr;
   BufferManager * buffer_manager = new BufferManager{disk_manager};
   Catalog * catalog = new Catalog{buffer_manager};
   Planner planner{catalog};
@@ -191,7 +191,7 @@ TEST(ExecutorTest, ExecutorSelectTest1) {
 }
 
 TEST(ExecutorTest, ExecutorSelectTest2) {
-  DiskManager * disk_manager = new DiskManager{"test.db"};
+  DiskManager * disk_manager = nullptr;
   BufferManager * buffer_manager = new BufferManager{disk_manager};
   Catalog * catalog = new Catalog{buffer_manager};
   Planner planner{catalog};
@@ -248,7 +248,7 @@ TEST(ExecutorTest, ExecutorSelectTest2) {
 
 
 TEST(ExecutorTest, ExecutorSelectTest3) {
-  DiskManager * disk_manager = new DiskManager{"test.db"};
+  DiskManager * disk_manager = nullptr;
   BufferManager * buffer_manager = new BufferManager{disk_manager};
   Catalog * catalog = new Catalog{buffer_manager};
   Planner planner{catalog};
@@ -302,7 +302,7 @@ TEST(ExecutorTest, ExecutorSelectTest3) {
 }
 
 TEST(ExecutorTest, ExecutorSelectTest4) {
-  DiskManager * disk_manager = new DiskManager{"test.db"};
+  DiskManager * disk_manager = nullptr;
   BufferManager * buffer_manager = new BufferManager{disk_manager};
   Catalog * catalog = new Catalog{buffer_manager};
   Planner planner{catalog};
@@ -372,7 +372,7 @@ TEST(ExecutorTest, ExecutorSelectTest4) {
 }
 
 TEST(ExecutorTest, ExecutorSelectTest5) {
-  DiskManager * disk_manager = new DiskManager{"test.db"};
+  DiskManager * disk_manager = nullptr;
   BufferManager * buffer_manager = new BufferManager{disk_manager};
   Catalog * catalog = new Catalog{buffer_manager};
   Planner planner{catalog};
@@ -446,7 +446,7 @@ TEST(ExecutorTest, ExecutorSelectTest5) {
 
 
 TEST(ExecutorTest, ExecutorSelectTest6) {
-  DiskManager * disk_manager = new DiskManager{"test.db"};
+  DiskManager * disk_manager = nullptr;
   BufferManager * buffer_manager = new BufferManager{disk_manager};
   Catalog * catalog = new Catalog{buffer_manager};
   Planner planner{catalog};
@@ -513,7 +513,7 @@ TEST(ExecutorTest, ExecutorSelectTest6) {
 
 
 TEST(ExecutorTest, ExecutorSelectTest7) {
-  DiskManager * disk_manager = new DiskManager{"test.db"};
+  DiskManager * disk_manager = nullptr;
   BufferManager * buffer_manager = new BufferManager{disk_manager};
   Catalog * catalog = new Catalog{buffer_manager};
   Planner planner{catalog};
@@ -557,7 +557,7 @@ TEST(ExecutorTest, ExecutorSelectTest7) {
 }
 
 TEST(ExecutorTest, ExecutorSelectTest8) {
-  DiskManager * disk_manager = new DiskManager{"test.db"};
+  DiskManager * disk_manager = nullptr;
   BufferManager * buffer_manager = new BufferManager{disk_manager};
   Catalog * catalog = new Catalog{buffer_manager};
   Planner planner{catalog};
@@ -602,7 +602,7 @@ TEST(ExecutorTest, ExecutorSelectTest8) {
 
 
 TEST(ExecutorTest, ExecutorSelectTest9) {
-  DiskManager * disk_manager = new DiskManager{"test.db"};
+  DiskManager * disk_manager = nullptr;
   BufferManager * buffer_manager = new BufferManager{disk_manager};
   Catalog * catalog = new Catalog{buffer_manager};
   Planner planner{catalog};
@@ -668,7 +668,7 @@ TEST(ExecutorTest, ExecutorSelectTest9) {
 
 
 TEST(ExecutorTest, ExecutorInsertSelect1) {
-  DiskManager * disk_manager = new DiskManager{"test.db"};
+  DiskManager * disk_manager = nullptr;
   BufferManager * buffer_manager = new BufferManager{disk_manager};
   Catalog * catalog = new Catalog{buffer_manager};
   Planner planner{catalog};
@@ -724,7 +724,7 @@ TEST(ExecutorTest, ExecutorInsertSelect1) {
 
 
 TEST(ExecutorTest, ExecutorInsertSelect2) {
-  DiskManager * disk_manager = new DiskManager{"test.db"};
+  DiskManager * disk_manager = nullptr;
   BufferManager * buffer_manager = new BufferManager{disk_manager};
   Catalog * catalog = new Catalog{buffer_manager};
   Planner planner{catalog};

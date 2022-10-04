@@ -4,7 +4,7 @@
 #include "storage/page/page.h"
 
 TEST(DiskTest, DiskBasicTest1) {
-    DiskManager * dm = new DiskManager{"DiskBasicTest1.db"};
+    DiskManager * dm = new DiskManager{"disktest1.db"};
     char data[4096]{};
     data[0] = 'a';
     dm->WritePage(0, data);
@@ -15,7 +15,7 @@ TEST(DiskTest, DiskBasicTest1) {
 }
 
 TEST(DiskTest, DiskBasicTest2) {
-    DiskManager * dm = new DiskManager{"DiskBasicTest2.db"};
+    DiskManager * dm = new DiskManager{"disktest2.db"};
     char data[4096]{};
     data[0] = 'a';
     data[1] = 'a';
@@ -30,7 +30,7 @@ TEST(DiskTest, DiskBasicTest2) {
 }
 
 TEST(DiskTest, DiskBasicTest3) {
-    DiskManager * dm = new DiskManager{"test.db"};
+    DiskManager * dm = new DiskManager{"disktest3.db"};
     
     Page * page1 = new Page{0};
     dm->WritePage(page1->GetPageId(), page1->GetData());

@@ -10,6 +10,9 @@ class DBCatalogTest : public ::testing::Test {
       db.Execute("CREATE TABLE student (sid integer not null, name varchar(36))");
   }
   QuasDB db{"test"};
+  void TearDown() override {
+    db.Delete();
+  }
 };
 
 TEST_F(DBCatalogTest, DBCatalogTest1) {
@@ -27,6 +30,6 @@ TEST_F(DBCatalogTest, DBCatalogTest2) {
     auto res = db.Execute("SELECT * FROM columninfo");
     EXPECT_EQ(res.error, false);
     EXPECT_EQ(res.error_message, "");
-    EXPECT_EQ(res.ToString(), "|course|cid|1|0|0|\n|course|median|2|1|4|\n|course|name|4|1|12|\n|enrollment|cid|1|0|0|\n|enrollment|sid|1|0|4|\n|student|sid|1|0|0|\n|student|name|4|1|4|\n");
+    EXPECT_EQ(res.ToString(), "|course|cid|1|0|0|4|\n|course|median|2|1|4|8|\n|course|name|4|1|12|6|\n|enrollment|cid|1|0|0|4|\n|enrollment|sid|1|0|4|4|\n|student|sid|1|0|0|4|\n|student|name|4|1|4|36|\n");
     EXPECT_EQ(res.rows.size(), 7);
 }

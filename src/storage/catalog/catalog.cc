@@ -280,7 +280,9 @@ void Catalog::LoadTables() {
             int offset = dynamic_cast<const Data<int>*>(column_info_values.at(4))->value;
             int column_size = dynamic_cast<const Data<int>*>(column_info_values.at(5))->value;
 
+            c.nullable = nullable;
             c.data_type = IntToDataType(data_type_int);
+            c.size = column_size;
 
             CatalogColumn * cc = new CatalogColumn{c, offset};
             columns.emplace_back(cc);

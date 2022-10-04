@@ -19,4 +19,7 @@ public:
     int GetFileSize() {
         return disk_manager->GetFileSize();
     }
+    void Delete() {
+        disk_manager->DeleteFile();
+    }
 };

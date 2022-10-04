@@ -1,10 +1,13 @@
+#include <filesystem>
+#include <iostream>
+
 #include "disk_manager.h"
 #include "../../common/config.h"
 #include "../../common/error.h"
 
 
 DiskManager::DiskManager(std::string file_name) : file_name{file_name} {
-    db_io.open(file_name, std::ios::binary | std::ios::in | std::ios::out); // std::ios::trunc temporary
+    db_io.open(file_name, std::ios::binary | std::ios::in | std::ios::out);
 
     if (!db_io.is_open()) {
         db_io.clear();
@@ -48,5 +51,17 @@ void DiskManager::ReadPage(int page_id, char * page_data) {
         db_io.clear();
         std::string e = "Did not read a page " + std::to_string(page_id);
         throw Error{ErrorType::Internal, e};
+    }
+}
+
+void DiskManager::DeleteFile() {
+    try {
+        if (std::filesystem::remove(file_name)) {
+            std::cerr << "file " << file_name << " deleted.\n";
+        } else {
+            std::cerr << "file " << file_name << " not found.\n";
+        }
+    } catch(const std::filesystem::filesystem_error& err) {
+        std::cerr << "filesystem error: " << err.what() << '\n';
     }
 }
