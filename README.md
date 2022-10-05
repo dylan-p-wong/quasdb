@@ -4,7 +4,7 @@ QuasDB is a learning project SQL database. Not meant for handling any real workl
 
 ## Features
 
-QuasDB currently is a WIP and is not thread safe at the time being. Addionally transactions are not supported at the moment but plan to be added in the future. Here is a summary of the availble SQL features with more info being available [here](https://github.com/dylan-p-wong/quasdb/docs).
+QuasDB currently is a WIP and is not thread safe at the time being. Addionally transactions are not supported at the moment but plan to be added in the future. Here is a summary of the availble SQL features with more info being available [here](https://github.com/dylan-p-wong/quasdb/blob/master/docs/sql.md).
 
 Statements
 - CREATE TABLE

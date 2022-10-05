@@ -46,7 +46,6 @@ Types that are supported for storing in the database. They are stored in an Abst
 | != | inequality |
 
 ## Statements
----
 ### Create Table
 Examples
 ```
