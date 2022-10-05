@@ -14,22 +14,22 @@ FetchContent_MakeAvailable(googletest)
 
 include(GoogleTest)
 
-file(GLOB BUSTUB_TEST_SOURCES "${PROJECT_SOURCE_DIR}/tests/*/*test.cc")
+file(GLOB TEST_SOURCES "${PROJECT_SOURCE_DIR}/tests/*/*test.cc")
 
-foreach (bustub_test_source ${BUSTUB_TEST_SOURCES})
-  get_filename_component(bustub_test_filename ${bustub_test_source} NAME)
-  string(REPLACE ".cc" "" bustub_test_name ${bustub_test_filename})
+foreach (test_source ${TEST_SOURCES})
+  get_filename_component(test_filename ${test_source} NAME)
+  string(REPLACE ".cc" "" test_name ${test_filename})
   
   add_executable(
-    ${bustub_test_name}
-    ${bustub_test_source}
+    ${test_name}
+    ${test_source}
   )
 
-  target_link_libraries(${bustub_test_name}
+  target_link_libraries(${test_name}
     PRIVATE
       quas
       GTest::gtest_main
   )
 
-  gtest_discover_tests(${bustub_test_name})
-endforeach (bustub_test_source ${BUSTUB_TEST_SOURCES})
+  gtest_discover_tests(${test_name})
+endforeach (test_source ${TEST_SOURCES})
