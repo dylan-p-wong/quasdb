@@ -20,6 +20,6 @@ public:
         return disk_manager->GetFileSize();
     }
     void Delete() {
-        disk_manager->DeleteFile();
+        // disk_manager->DeleteFile();
     }
 };
